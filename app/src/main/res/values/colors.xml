@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stile: fondo bianco, verde Altarail, bordi verdi arrotondati, rosso per avvisi e link. -->
+    <color name="primario">#2E9E44</color>
+    <color name="primario_scuro">#1F7A33</color>
+    <color name="primario_testo">#1F7A33</color>
+    <color name="accento">#2E9E44</color>
+    <color name="primario_chiaro">#E8F5EA</color>
+    <color name="icona_sfondo">#123D1C</color>
+
+    <color name="sfondo">#FFFFFF</color>
+    <color name="superficie">#FFFFFF</color>
+    <color name="testo">#1A1A1A</color>
+    <color name="testo_secondario">#5E5E5E</color>
+    <color name="linea">#D9D9D9</color>
+
+    <color name="ok">#2E7D32</color>
+    <color name="ok_chiaro">#DDF1DE</color>
+    <color name="attenzione">#B26A00</color>
+    <color name="attenzione_chiaro">#FFEFCC</color>
+    <color name="errore">#C8102E</color>
+    <color name="errore_chiaro">#FADDDD</color>
+    <color name="info_chiaro">#DCEBFB</color>
+    <color name="neutro_chiaro">#E9ECEF</color>
+</resources>

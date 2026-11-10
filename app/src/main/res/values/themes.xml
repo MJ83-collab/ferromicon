@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema chiaro; in values-night la variante scura, scelta da Android in automatico. -->
+    <style name="Tema" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/primario_scuro</item>
+        <item name="android:colorPrimaryDark">@color/primario_scuro</item>
+        <item name="android:colorAccent">@color/accento</item>
+        <item name="android:windowBackground">@color/sfondo</item>
+        <item name="android:textColorPrimary">@color/testo</item>
+        <item name="android:textColor">@color/testo</item>
+        <item name="android:textColorSecondary">@color/testo_secondario</item>
+        <item name="android:buttonStyle">@style/Pulsante</item>
+    </style>
+
+    <!-- Pulsante piatto con angoli arrotondati, senza maiuscolo forzato. -->
+    <style name="Pulsante" parent="android:Widget.Material.Button">
+        <item name="android:background">@drawable/pulsante_sfondo</item>
+        <item name="android:textColor">@color/primario_testo</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">46dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+</resources>

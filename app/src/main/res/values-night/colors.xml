@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primario">#4CC264</color>
+    <color name="primario_scuro">#0E1A10</color>
+    <color name="primario_testo">#4CC264</color>
+    <color name="accento">#4CC264</color>
+    <color name="primario_chiaro">#1B2E1F</color>
+
+    <color name="sfondo">#121412</color>
+    <color name="superficie">#1B1E1B</color>
+    <color name="testo">#ECEFEC</color>
+    <color name="testo_secondario">#A0A8A0</color>
+    <color name="linea">#333833</color>
+
+    <color name="ok">#7FD08A</color>
+    <color name="ok_chiaro">#1F3A24</color>
+    <color name="attenzione">#F0B35A</color>
+    <color name="attenzione_chiaro">#40321A</color>
+    <color name="errore">#F28B8B</color>
+    <color name="errore_chiaro">#432123</color>
+    <color name="info_chiaro">#1F3247</color>
+    <color name="neutro_chiaro">#262D35</color>
+</resources>
