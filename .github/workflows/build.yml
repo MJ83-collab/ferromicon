@@ -1,0 +1,73 @@
+name: Compila APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepara la chiave di firma
+        env:
+          FM_KEYSTORE_BASE64: ${{ secrets.FM_KEYSTORE_BASE64 }}
+          FM_KEYSTORE_PASSWORD: ${{ secrets.FM_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$FM_KEYSTORE_BASE64" ] || [ -z "$FM_KEYSTORE_PASSWORD" ]; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "Nessuna chiave (pull request): firma di prova"
+            else
+              echo "Mancano i segreti FM_KEYSTORE_BASE64 e FM_KEYSTORE_PASSWORD (Settings > Secrets and variables > Actions)."
+              exit 1
+            fi
+          else
+            echo "$FM_KEYSTORE_BASE64" | base64 -d > app/ferromicon.jks
+          fi
+
+      - name: Test delle regole
+        run: ./gradlew --no-daemon :core:test
+
+      - name: Compila APK di debug
+        env:
+          FM_KEYSTORE_PASSWORD: ${{ secrets.FM_KEYSTORE_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Rinomina APK e scrivi la versione
+        id: versione
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk ferromicon.apk
+          NOME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          CODICE=$(grep -oP 'versionCode = \K[0-9]+' app/build.gradle.kts)
+          echo "nome=$NOME" >> "$GITHUB_OUTPUT"
+          echo "{\"versionName\":\"$NOME\",\"versionCode\":$CODICE}" > versione.json
+          cat versione.json
+
+      - name: Carica APK come artefatto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ferromicon.apk
+          path: ferromicon.apk
+
+      - name: Pubblica release con l'APK
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.versione.outputs.nome }}
+          name: Ferromicon ${{ steps.versione.outputs.nome }}
+          make_latest: true
+          files: |
+            ferromicon.apk
+            versione.json
