@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ferromicon: tomo antico in pelle con fregi dorati e una ruota ferroviaria al centro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.86" android:scaleY="0.86" android:translateX="-2">
+
+    <!-- ombra -->
+    <path android:fillColor="#40000000"
+        android:pathData="M33,30 h44 a3,3 0 0 1 3,3 v50 a3,3 0 0 1 -3,3 h-44 z" />
+    <!-- taglio delle pagine (pergamena) -->
+    <path android:fillColor="#EAD9AE"
+        android:pathData="M34,27 h41 a2,2 0 0 1 2,2 v50 a2,2 0 0 1 -2,2 h-41 z" />
+    <path android:fillColor="#C9B27A"
+        android:pathData="M74,30 h1 v48 h-1 z M71.5,30 h1 v48 h-1 z" />
+    <!-- copertina in pelle -->
+    <path android:fillColor="#7A2A17"
+        android:pathData="M31,24 h39 a3,3 0 0 1 3,3 v52 a3,3 0 0 1 -3,3 h-39 a3,3 0 0 1 -3,-3 v-52 a3,3 0 0 1 3,-3 z" />
+    <!-- dorso -->
+    <path android:fillColor="#561B0E"
+        android:pathData="M31,24 h6 v58 h-6 a3,3 0 0 1 -3,-3 v-52 a3,3 0 0 1 3,-3 z" />
+    <!-- nervature dorate sul dorso -->
+    <path android:fillColor="#D4AF37"
+        android:pathData="M28,33 h9 v2 h-9 z M28,52 h9 v2 h-9 z M28,71 h9 v2 h-9 z" />
+    <!-- cornice dorata -->
+    <path android:fillColor="#D4AF37" android:fillType="evenOdd"
+        android:pathData="M40,28 h29 v50 h-29 z M41.5,29.5 v47 h26 v-47 z" />
+    <!-- cantonali -->
+    <path android:fillColor="#D4AF37"
+        android:pathData="M40,28 h7 l-7,7 z M69,28 v7 l-7,-7 z M40,78 v-7 l7,7 z M69,78 h-7 l7,-7 z" />
+    <!-- ruota ferroviaria: cerchione, mozzo e razze -->
+    <path android:fillColor="#D4AF37" android:fillType="evenOdd"
+        android:pathData="M54.5,53 m-11,0 a11,11 0 1 0 22,0 a11,11 0 1 0 -22,0 z M54.5,53 m-8.5,0 a8.5,8.5 0 1 0 17,0 a8.5,8.5 0 1 0 -17,0 z" />
+    <path android:fillColor="#D4AF37"
+        android:pathData="M54.5,53 m-2.5,0 a2.5,2.5 0 1 0 5,0 a2.5,2.5 0 1 0 -5,0 z" />
+    <path android:fillColor="#D4AF37"
+        android:pathData="M53.8,45 h1.4 v16 h-1.4 z M46.5,52.3 h16 v1.4 h-16 z" />
+    <path android:fillColor="#D4AF37"
+        android:pathData="M48.6,47.6 l1,-1 l11.3,11.3 l-1,1 z M60.4,47.6 l1,1 l-11.3,11.3 l-1,-1 z" />
+    <!-- binario sotto la ruota -->
+    <path android:fillColor="#D4AF37"
+        android:pathData="M44,66 h21 v1.6 h-21 z M46,68.5 h2 v2.5 h-2 z M53.5,68.5 h2 v2.5 h-2 z M61,68.5 h2 v2.5 h-2 z" />
+    <!-- fermaglio -->
+    <path android:fillColor="#B8932E"
+        android:pathData="M68,48 h9 a1.5,1.5 0 0 1 1.5,1.5 v7 a1.5,1.5 0 0 1 -1.5,1.5 h-9 z" />
+    <path android:fillColor="#7A2A17"
+        android:pathData="M74.5,53 m-1.5,0 a1.5,1.5 0 1 0 3,0 a1.5,1.5 0 1 0 -3,0 z" />
+    </group>
+</vector>
