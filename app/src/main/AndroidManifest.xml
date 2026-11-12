@@ -66,6 +66,12 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".EsportaActivity"
+            android:exported="false"
+            android:label="Report e dati"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".WikiActivity"
             android:exported="false"
             android:label="Wiki Ferrovia"

@@ -288,7 +288,7 @@ object Archivio {
         )
     }
 
-    private fun servizioAJson(s: Servizio) = JSONObject().apply {
+    internal fun servizioAJson(s: Servizio) = JSONObject().apply {
         put("id", s.id)
         put("inizio", s.turno.inizio.toString())
         put("fine", s.turno.fine.toString())
@@ -309,7 +309,7 @@ object Archivio {
         put("straordinario", s.straordinario)
     }
 
-    private fun servizioDa(o: JSONObject) = Servizio(
+    internal fun servizioDa(o: JSONObject) = Servizio(
         id = o.getLong("id"),
         turno = Turno(
             inizio = LocalDateTime.parse(o.getString("inizio")),
@@ -332,14 +332,14 @@ object Archivio {
         straordinario = o.optBoolean("straordinario", false)
     )
 
-    private fun turnoAJson(t: TurnoImpianto) = JSONObject().apply {
+    internal fun turnoAJson(t: TurnoImpianto) = JSONObject().apply {
         put("nome", t.nome); put("impianto", t.impianto)
         put("giornate", JSONArray().apply { t.giornate.forEach { put(it) } })
         put("riferimento", t.dataRiferimento.toString()); put("posizione", t.posizione)
         put("validoFino", t.validoFino.toString())
     }
 
-    private fun turnoDa(o: JSONObject): TurnoImpianto? = runCatching {
+    internal fun turnoDa(o: JSONObject): TurnoImpianto? = runCatching {
         TurnoImpianto(
             nome = o.optString("nome", ""), impianto = o.optString("impianto", ""),
             giornate = o.optJSONArray("giornate")?.let { a -> List(a.length()) { a.getString(it) } } ?: emptyList(),
@@ -355,18 +355,18 @@ object Archivio {
     fun applicaCompilazione(ctx: Context, c: Compilazione) =
         modifica(ctx) { PianoTurno.applica(it, c, LocalDateTime.now()) }
 
-    private fun assenzaAJson(a: Assenza) = JSONObject().apply {
+    internal fun assenzaAJson(a: Assenza) = JSONObject().apply {
         put("id", a.id); put("data", a.data.toString()); put("tipo", a.tipo.name); put("note", a.note)
     }
 
-    private fun assenzaDa(o: JSONObject) = Assenza(
+    internal fun assenzaDa(o: JSONObject) = Assenza(
         id = o.getLong("id"),
         data = LocalDate.parse(o.getString("data")),
         tipo = runCatching { TipoAssenza.valueOf(o.getString("tipo")) }.getOrDefault(TipoAssenza.ALTRO),
         note = o.optString("note", "")
     )
 
-    private fun preferitoAJson(p: Preferito) = JSONObject().apply {
+    internal fun preferitoAJson(p: Preferito) = JSONObject().apply {
         put("id", p.id); put("nome", p.nome)
         put("oraInizio", p.oraInizio.toString()); put("oraFine", p.oraFine.toString())
         put("profilo", p.profilo.name); put("condotta", p.minutiCondotta)
@@ -378,7 +378,7 @@ object Archivio {
         put("giornoRiferimento", p.giornoRiferimento?.toString() ?: "")
     }
 
-    private fun preferitoDa(o: JSONObject) = Preferito(
+    internal fun preferitoDa(o: JSONObject) = Preferito(
         id = o.getLong("id"),
         nome = o.optString("nome", "Servizio"),
         oraInizio = LocalTime.parse(o.getString("oraInizio")),
@@ -397,7 +397,7 @@ object Archivio {
         giornoRiferimento = o.optString("giornoRiferimento", "").takeIf { it.isNotBlank() }?.let { LocalDate.parse(it) }
     )
 
-    private fun impostazioniAJson(i: Impostazioni) = JSONObject().apply {
+    internal fun impostazioniAJson(i: Impostazioni) = JSONObject().apply {
         put("dataAssunzione", i.dataAssunzione?.toString() ?: "")
         put("livello", i.livello.name)
         put("adPersonam", i.adPersonam)
@@ -423,7 +423,7 @@ object Archivio {
         })
     }
 
-    private fun impostazioniDa(o: JSONObject) = Impostazioni(
+    internal fun impostazioniDa(o: JSONObject) = Impostazioni(
         dataAssunzione = o.optString("dataAssunzione", "").takeIf { it.isNotBlank() }?.let { LocalDate.parse(it) },
         livello = runCatching { Livello.valueOf(o.getString("livello")) }.getOrDefault(Livello.B3),
         adPersonam = o.optDouble("adPersonam", 0.0),
