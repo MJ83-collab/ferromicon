@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -134,8 +133,8 @@ class CartellinoSapActivity : Activity() {
         corpo.addView(Button(this).apply {
             text = t
             setOnClickListener { azione() }
-            layoutParams = LinearLayout.LayoutParams(View.LayoutParams.MATCH_PARENT,
-                View.LayoutParams.WRAP_CONTENT).apply { setMargins(0, dp(6), 0, 0) }
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, dp(6), 0, 0) }
         })
     }
 
