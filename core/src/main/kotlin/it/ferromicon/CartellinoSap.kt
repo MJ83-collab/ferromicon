@@ -29,8 +29,9 @@ object LettoreCartellino {
     private val GIORNO = Regex("""^(\d{2})\s+(LU|MA|ME|GI|VE|SA|DO)\b""")
     private val ORA = Regex("""\b\d{2}:\d{2}\b""")
     private val NUMERO = Regex("""(?<![\d,:])-?\d{1,3},\d{2}-?(?![\d,])""")
-    private val PERIODO = Regex("""(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})""")
-    private val FLEX_PRECEDENTE = Regex("""Flessibilit[aà]\s+mese\s+precedente\D*(-?\d{1,3},\d{2}-?)""", RegexOption.IGNORE_CASE)
+    private val PERIODO = Regex("""(\d{2})\.(\d{2})\.(\d{4})\s*(?:-|al)\s*(\d{2})\.(\d{2})\.(\d{4})""")
+    // Nel PDF SAP la voce è scritta «Flessibilià» (senza la t): il pattern accetta entrambe.
+    private val FLEX_PRECEDENTE = Regex("""Flessibili?t?[aà]\s+mese\s+precedente\D*(-?\d{1,3},\d{2}-?)""", RegexOption.IGNORE_CASE)
     private val RIGA_TIMBRATURA = Regex("""^(Timbrature|Maggior presenza)""", RegexOption.IGNORE_CASE)
 
     /** Converte «0,45-» o «-0,45» in -0.45; «1,02» in 1.02. */
