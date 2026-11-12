@@ -104,6 +104,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             setOnClickListener { mese = YearMonth.now(); aggiorna() }
         }
+        intestazioneMese.addView(Button(this).apply { text = "☰"; setOnClickListener { apriMenu(true) } })
         intestazioneMese.addView(Button(this).apply { text = "‹"; setOnClickListener { mese = mese.minusMonths(1); aggiorna() } })
         intestazioneMese.addView(titolo, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         intestazioneMese.addView(Button(this).apply { text = "›"; setOnClickListener { mese = mese.plusMonths(1); aggiorna() } })
@@ -132,7 +133,11 @@ class MainActivity : Activity() {
             LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         radice.addView(costruisciBarraTab())
 
-        setContentView(radice)
+        val radiceConMenu = android.widget.FrameLayout(this)
+        radiceConMenu.addView(radice, android.widget.FrameLayout.LayoutParams(
+            android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
+        costruisciMenu(radiceConMenu)
+        setContentView(radiceConMenu)
 
         // Android 13+: permesso per mostrare i promemoria
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -200,13 +205,15 @@ class MainActivity : Activity() {
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
-        if (scheda != Scheda.AGENDA) { scheda = Scheda.AGENDA; aggiorna() } else super.onBackPressed()
+        if (menuLaterale.visibility == View.VISIBLE) apriMenu(false)
+        else if (scheda != Scheda.AGENDA) { scheda = Scheda.AGENDA; aggiorna() } else super.onBackPressed()
     }
 
     private class Strumento(val icona: String, val titolo: String, val nota: String, val id: Int)
 
-    private fun strumenti() {
-        gruppo("Agenda", listOf(
+    /** Gruppi di strumenti: usati dalla scheda Strumenti e dal menu laterale. */
+    private fun gruppi(): List<Pair<String, List<Strumento>>> = listOf(
+        "Agenda" to listOf(
             Strumento("📍", "Vai a oggi", "Torna al mese corrente", 4),
             Strumento("🧭", "Il mio turno", "Compila fino al cambio turno", 19),
             Strumento("👤", "Calendario agente", "CID o nome: giornate, riposi, ferie", 21),
@@ -216,8 +223,8 @@ class MainActivity : Activity() {
             Strumento("📥", "Importa turno", "Da testo incollato", 7),
             Strumento("📂", "Importa file", "Zip, .ics, backup .json o PDF: riconosce il tipo", 31),
             Strumento("🔁", "Turno ciclico", "Genera più settimane", 8)
-        ))
-        gruppo("Paga e regole", listOf(
+        ),
+        "Paga e regole" to listOf(
             Strumento("📆", "Riepilogo dell'anno", "Mese per mese", 5),
             Strumento("🎌", "Recupero festivi", "Scadenze a 90 giorni", 14),
             Strumento("🧾", "Cedolini e CU", "Importa i PDF e confronta", 18),
@@ -227,21 +234,84 @@ class MainActivity : Activity() {
             Strumento("🏠", "Perimetri di residenza", "Ore fuori residenza", 15),
             Strumento("📖", "Wiki Ferrovia", "Tempi accessori, abbreviazioni, permessi: senza connessione", 40),
             Strumento("🧮", "Cartellino SAP", "Importa il PDF: timbrature e flessibilità", 41)
-        ))
-        gruppo("Orari e rubrica", listOf(
+        ),
+        "Orari e rubrica" to listOf(
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
             Strumento("📒", "Rubrica stazioni", "Numeri utili", 12),
             Strumento("🗓️", "Esporta calendario", "File .ics: scegli cosa, anche su Drive", 9),
             Strumento("📥", "Importa calendario", "File .ics da Drive o telefono", 30),
             Strumento("📄", "Esporta in CSV", "Servizi e assenze", 17)
-        ))
-        gruppo("Backup", listOf(
+        ),
+        "Backup" to listOf(
             Strumento("💾", "Backup su file", "Salva una copia", 2),
             Strumento("♻️", "Ripristina da file", "Riporta una copia", 3),
             Strumento("🕒", "Backup automatici", "Una copia al giorno", 10),
             Strumento("🗑️", "Cestino", "Voci eliminate di recente", 11),
             Strumento("📑", "Report e dati", "PDF mensile o annuale, CSV da importare ed esportare", 42)
-        ))
+        )
+    )
+
+    private fun strumenti() {
+        gruppi().forEach { (nome, voci) -> gruppo(nome, voci) }
+    }
+
+    private lateinit var menuLaterale: LinearLayout
+    private lateinit var sfondoMenu: View
+
+    /** Menu laterale come in Binario: si apre con ☰ e riporta le stesse voci della scheda Strumenti. */
+    private fun costruisciMenu(radice: android.widget.FrameLayout) {
+        sfondoMenu = View(this).apply {
+            setBackgroundColor(0x99000000.toInt())
+            visibility = View.GONE
+            setOnClickListener { apriMenu(false) }
+        }
+        radice.addView(sfondoMenu, android.widget.FrameLayout.LayoutParams(
+            android.widget.FrameLayout.LayoutParams.MATCH_PARENT, android.widget.FrameLayout.LayoutParams.MATCH_PARENT))
+        val voci = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        gruppi().forEach { (nome, lista) ->
+            voci.addView(TextView(this).apply {
+                text = nome.uppercase(locale)
+                textSize = 12f
+                setTextColor(Stile.primario)
+                setPadding(0, dp(14), 0, dp(4))
+            })
+            lista.forEach { st ->
+                voci.addView(TextView(this).apply {
+                    text = "${st.icona}  ${st.titolo}"
+                    textSize = 16f
+                    setTextColor(Stile.testo)
+                    setPadding(dp(4), dp(10), dp(4), dp(10))
+                    setOnClickListener { apriMenu(false); esegui(st.id) }
+                })
+            }
+        }
+        menuLaterale = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Stile.superficie)
+            isClickable = true
+            setOnApplyWindowInsetsListener { v, insets ->
+                v.setPadding(dp(14), insetAlto(insets), dp(14), insetBasso(insets))
+                insets
+            }
+            visibility = View.GONE
+            addView(TextView(this@MainActivity).apply {
+                text = "Ferromicon"
+                textSize = 22f
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(Stile.primario)
+                setPadding(0, dp(8), 0, dp(8))
+            })
+            addView(android.widget.ScrollView(this@MainActivity).apply { addView(voci) },
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        }
+        radice.addView(menuLaterale, android.widget.FrameLayout.LayoutParams(
+            (resources.displayMetrics.widthPixels * 0.8).toInt(),
+            android.widget.FrameLayout.LayoutParams.MATCH_PARENT, Gravity.START))
+    }
+
+    private fun apriMenu(aperto: Boolean) {
+        menuLaterale.visibility = if (aperto) View.VISIBLE else View.GONE
+        sfondoMenu.visibility = if (aperto) View.VISIBLE else View.GONE
     }
 
     private fun gruppo(nome: String, voci: List<Strumento>) {
@@ -609,7 +679,7 @@ class MainActivity : Activity() {
 
     /** Pressione lunga su un servizio: duplica, salva come preferito, elimina. */
     private fun azioniServizio(s: Servizio) {
-        val opzioni = arrayOf("Duplica al giorno dopo", "Duplica alla settimana dopo", "Salva come preferito", "Elimina")
+        val opzioni = arrayOf("Duplica al giorno dopo", "Duplica alla settimana dopo", "Copia in altra data", "Salva come preferito", "Elimina")
         AlertDialog.Builder(this)
             .setTitle("${fmtGiorno.format(s.turno.inizio)} ${fmtOra.format(s.turno.inizio)}–${fmtOra.format(s.turno.fine)}")
             .setItems(opzioni) { _, scelta ->
@@ -621,11 +691,22 @@ class MainActivity : Activity() {
                         Toast.makeText(this, "Copiato a ${fmtGiornoLungo.format(copia.turno.inizio)}", Toast.LENGTH_SHORT).show()
                         aggiorna()
                     }
-                    2 -> chiediNome(s.note.ifBlank { "${fmtOra.format(s.turno.inizio)}–${fmtOra.format(s.turno.fine)}" }) { nome ->
+                    2 -> {
+                        val inizio = s.turno.inizio
+                        android.app.DatePickerDialog(this, { _, y, m, g ->
+                            val nuova = LocalDate.of(y, m + 1, g)
+                            val giorni = java.time.temporal.ChronoUnit.DAYS.between(inizio.toLocalDate(), nuova)
+                            val copia = s.spostato(giorni, System.currentTimeMillis())
+                            Archivio.aggiornaOInserisci(this, copia)
+                            Toast.makeText(this, "Copiato a ${fmtGiornoLungo.format(copia.turno.inizio)}", Toast.LENGTH_SHORT).show()
+                            aggiorna()
+                        }, inizio.year, inizio.monthValue - 1, inizio.dayOfMonth).show()
+                    }
+                    3 -> chiediNome(s.note.ifBlank { "${fmtOra.format(s.turno.inizio)}–${fmtOra.format(s.turno.fine)}" }) { nome ->
                         Archivio.salvaPreferito(this, Preferito.da(s, nome, System.currentTimeMillis()))
                         Toast.makeText(this, "Preferito \"$nome\" salvato", Toast.LENGTH_SHORT).show()
                     }
-                    3 -> AlertDialog.Builder(this)
+                    4 -> AlertDialog.Builder(this)
                         .setMessage("Eliminare questo servizio?")
                         .setPositiveButton("Elimina") { _, _ -> eliminaConAnnulla(servizio = s) }
                         .setNegativeButton("Annulla", null)

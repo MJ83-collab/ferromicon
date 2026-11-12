@@ -1,5 +1,13 @@
 # Novità
 
+## 0.0.23
+- Primo avvio: la pagina di benvenuto non tronca più la prima riga sotto la barra di stato.
+- Schermata principale: menu laterale (☰) con tutte le voci della scheda Strumenti.
+- Servizio: «Copia in altra data» dal menu a pressione lunga, scegliendo il giorno di arrivo.
+- Periodi invernali: un'unica fonte per le date, la tabella di ogni anno. Senza tabella non compaiono date, anche nel calendario agente.
+
+Versione 0.0.23 (versionCode 23).
+
 ## 0.0.22
 - Aggiornamenti: il controllo di una versione nuova parte a ogni apertura dell'app, senza attendere le 12 ore.
 - Primo avvio: si sceglie anche «Personale di ufficio»; la lettura del cedolino passa alla schermata successiva.
