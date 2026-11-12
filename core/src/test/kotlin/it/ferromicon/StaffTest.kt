@@ -48,8 +48,10 @@ class StaffTest {
     @Test
     fun saldoMeseSommaFlessibilitaEConRiporto() {
         val g = listOf(giorno(1, "08:15", "16:21", 0.5, 2), giorno(2, "08:15", "16:21", -0.25, 2))
-        assertEquals(15, OrarioStaff.saldoMese(g))
-        assertEquals(75, OrarioStaff.saldoMese(g, 60))
+        assertEquals(25, OrarioStaff.saldoMese(g))
+        assertEquals(85, OrarioStaff.saldoMese(g, 60))
+        assertEquals(106, OrarioStaff.minutiFlex(1.46))
+        assertEquals(-5, OrarioStaff.minutiFlex(-0.05))
     }
 
     @Test

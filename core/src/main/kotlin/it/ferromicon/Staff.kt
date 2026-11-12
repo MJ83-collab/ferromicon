@@ -51,11 +51,21 @@ object OrarioStaff {
     }
 
     /**
+     * Flessibilità del cartellino in minuti con segno. Il cartellino scrive ore e minuti:
+     * «1,46» sono 1 h 46', «0,05-» sono -5 minuti.
+     */
+    fun minutiFlex(valore: Double): Int {
+        val centesimi = Math.round(Math.abs(valore) * 100).toInt()
+        val minuti = (centesimi / 100) * 60 + centesimi % 100
+        return if (valore < 0) -minuti else minuti
+    }
+
+    /**
      * Saldo mensile di flessibilità in minuti: riporto del mese precedente più la somma
-     * della flessibilità di ogni giornata. La flessibilità del cartellino è letta in ore decimali.
+     * della flessibilità di ogni giornata.
      */
     fun saldoMese(giornate: List<GiornataSap>, riportoPrecedente: Int = 0): Int =
-        riportoPrecedente + giornate.sumOf { g -> g.flex?.let { Math.round(it * 60).toInt() } ?: 0 }
+        riportoPrecedente + giornate.sumOf { g -> g.flex?.let { minutiFlex(it) } ?: 0 }
 
     /** Giornate lavorate con meno di 4 timbrature (il minimo del vademecum). Le giornate senza timbrature (ferie, riposi) non contano. */
     fun giornateConTimbratureInsufficienti(giornate: List<GiornataSap>, minimo: Int = 4): List<GiornataSap> =
