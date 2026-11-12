@@ -109,6 +109,11 @@ class ImpostazioniActivity : Activity() {
         col.addView(nota("Il riepilogo mostra quanti ne hai presi e quanti ne restano. Lascia 0 se non lo sai."))
         col.addView(parentali)
 
+        val permessiSpettantiCampo = numero(imp.permessiSpettanti)
+        col.addView(etichetta("Giorni di permesso (ex festività e altri) spettanti nell'anno"))
+        col.addView(nota("La home e il widget mostrano quanti ne hai presi e quanti restano. Lascia 0 se non lo sai."))
+        col.addView(permessiSpettantiCampo)
+
         val promemoria = Spinner(this).apply {
             adapter = ArrayAdapter(this@ImpostazioniActivity, android.R.layout.simple_spinner_dropdown_item,
                 opzioniPromemoria.map { if (it == 0) "Disattivato" else "$it minuti prima" })
@@ -198,6 +203,7 @@ class ImpostazioniActivity : Activity() {
                     ferieResidueAnnoPrecedente = ferieResidue.text.toString().toIntOrNull() ?: 0,
                     permessiAggiuntivi = permessi.text.toString().toIntOrNull() ?: 0,
                     parentaliSpettanti = parentali.text.toString().toIntOrNull() ?: 0,
+                    permessiSpettanti = permessiSpettantiCampo.text.toString().toIntOrNull() ?: 0,
                     promemoriaMinuti = opzioniPromemoria[promemoria.selectedItemPosition],
                     redditoAnnuo = reddito.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0,
                     inpsPct = inpsPct.text.toString().replace(',', '.').toDoubleOrNull() ?: 9.19,

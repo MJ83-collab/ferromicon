@@ -66,7 +66,7 @@ class WidgetRiposo : AppWidgetProvider() {
         val oggi = LocalDate.now()
         val prossimo = dati.assenze.filter { it.data >= oggi && it.tipo.riposo }.minByOrNull { it.data }
         val ferie = dati.assenze.filter { it.data >= oggi && it.tipo == TipoAssenza.FERIE }.minByOrNull { it.data }
-        v.setTextViewText(R.id.w_etichetta, "Prossimo riposo")
+        v.setTextViewText(R.id.w_etichetta, "Prossimo riposo · ${dati.impostazioni.profiloAttivo.etichetta}")
         if (prossimo == null) {
             v.setTextViewText(R.id.w_titolo, "Nessun riposo")
             v.setTextViewText(R.id.w_dettaglio, "Non ci sono riposi in agenda da oggi in poi.")
@@ -82,6 +82,35 @@ class WidgetRiposo : AppWidgetProvider() {
         v.setTextViewText(R.id.w_nota, ferie?.let {
             "Prossime ferie: ${GIORNO_FMT.format(it.data)}"
         } ?: "Nessuna ferie in agenda")
+        apriApp(ctx, v)
+        return v
+    }
+}
+
+/** Widget "Permessi da usare": quanti giorni di permesso restano nell'anno, per il profilo scelto. */
+class WidgetPermessi : AppWidgetProvider() {
+
+    override fun onUpdate(ctx: Context, gestore: AppWidgetManager, ids: IntArray) {
+        ids.forEach { gestore.updateAppWidget(it, costruisci(ctx)) }
+    }
+
+    private fun costruisci(ctx: Context): RemoteViews {
+        val v = RemoteViews(ctx.packageName, R.layout.widget_mese)
+        v.setViewVisibility(R.id.w_barra, View.GONE)
+        val dati = Archivio.caricaTutto(ctx)
+        val anno = LocalDate.now().year
+        v.setTextViewText(R.id.w_etichetta, "Permessi $anno · ${dati.impostazioni.profiloAttivo.etichetta}")
+        val situazione = AvvisoPermessi.situazione(dati, anno)
+        if (situazione == null) {
+            v.setTextViewText(R.id.w_titolo, "Non impostato")
+            v.setTextViewText(R.id.w_dettaglio, "Imposta i giorni spettanti nelle Impostazioni.")
+            v.setTextViewText(R.id.w_nota, "")
+        } else {
+            val (presi, restano) = situazione
+            v.setTextViewText(R.id.w_titolo, "Restano $restano")
+            v.setTextViewText(R.id.w_dettaglio, "Presi $presi su ${dati.impostazioni.permessiSpettanti}")
+            v.setTextViewText(R.id.w_nota, "Quelli non usati entro il 31 dicembre si perdono.")
+        }
         apriApp(ctx, v)
         return v
     }

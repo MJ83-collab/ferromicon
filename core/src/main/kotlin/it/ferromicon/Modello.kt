@@ -204,6 +204,8 @@ data class Impostazioni(
     val nome: String = "",
     /** Giorni di congedo parentale spettanti nell'anno (0 = non impostato). */
     val parentaliSpettanti: Int = 0,
+    /** Giorni di permesso (ex festività e altri permessi) spettanti nell'anno; 0 = non impostato. */
+    val permessiSpettanti: Int = 0,
 ) {
     /** Profilo da usare per i nuovi servizi. */
     val profiloAttivo: Profilo get() = profilo ?: Profilo.MACCHINISTA
