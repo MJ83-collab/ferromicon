@@ -154,13 +154,15 @@ enum class TipoAssenza(val etichetta: String, val simbolo: String, val riposo: B
     MALATTIA("Malattia", "🤒", false),
     INFORTUNIO("Infortunio", "🩹", false),
     PARENTALE("Giorno parentale", "👶", false),
+    /** Chiusura decisa dall'azienda: non consuma ferie e non è un riposo da spostare. */
+    CHIUSURA_AZIENDALE("Chiusura aziendale", "🏢", false),
     ALTRO("Altra assenza", "📌", false);
 
     /** Codice breve per il calendario e la legenda. */
     val codice: String get() = when (this) {
         RIPOSO_SETTIMANALE -> "RS"; RIPOSO -> "R"; RECUPERO_FESTIVO -> "RF"; FERIE -> "F"
         PERMESSO_EX_FESTIVITA -> "PF"; PERMESSO -> "P"; DISPONIBILITA -> "D"; MALATTIA -> "M"
-        INFORTUNIO -> "I"; PARENTALE -> "PG"; ALTRO -> "A"
+        INFORTUNIO -> "I"; PARENTALE -> "PG"; CHIUSURA_AZIENDALE -> "CA"; ALTRO -> "A"
     }
 }
 
