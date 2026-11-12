@@ -92,4 +92,29 @@ class StaffTest {
         assertTrue(OrarioStaff.avvisoFlessibilita(301) != null)
         assertTrue(OrarioStaff.avvisoFlessibilita(-301) != null)
     }
+
+    @Test
+    fun accessoriPdmSonoIlTempoDopoLUltimoTreno() {
+        val arrivo = LocalDateTime.of(2026, 11, 12, 16, 10)
+        val termine = LocalDateTime.of(2026, 11, 12, 16, 45)
+        assertEquals(35, OrarioStaff.accessoriPdm(arrivo, termine))
+        assertEquals(0, OrarioStaff.accessoriPdm(termine, arrivo))
+    }
+
+    @Test
+    fun fineRealePdmSommaAccessoriAlRitardo() {
+        val arrivoReale = LocalDateTime.of(2026, 11, 12, 16, 22)
+        assertEquals(LocalDateTime.of(2026, 11, 12, 16, 57), OrarioStaff.fineRealePdm(arrivoReale, 35))
+    }
+
+    @Test
+    fun accessoriGiornataGiornata2Turno() {
+        // Lav 06:51, Sct 03:26, REFEZ 30 min, treno fuori servizio 9 min => 166 min
+        assertEquals(166, OrarioStaff.accessoriGiornata(411, 206, OrarioStaff.REFEZIONE_MINUTI, 9))
+    }
+
+    @Test
+    fun accessoriGiornataNonScendeSottoZero() {
+        assertEquals(0, OrarioStaff.accessoriGiornata(100, 90, 30, 0))
+    }
 }

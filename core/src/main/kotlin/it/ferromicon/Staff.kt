@@ -116,4 +116,25 @@ object OrarioStaff {
     fun exFestivitaResidue(giorniUsati: Int): Int = (EX_FESTIVITA_GIORNI - giorniUsati).coerceAtLeast(0)
 
     const val EX_FESTIVITA_GIORNI = 4
+
+    /**
+     * Accessori del macchinista: minuti tra l'arrivo prescritto dell'ultimo treno del servizio
+     * e il termine finale della giornata. Se il termine è prima dell'arrivo, restituisce 0.
+     */
+    fun accessoriPdm(arrivoUltimoTreno: java.time.LocalDateTime, terminePrescritto: java.time.LocalDateTime): Int =
+        java.time.Duration.between(arrivoUltimoTreno, terminePrescritto).toMinutes().toInt().coerceAtLeast(0)
+
+    /** Fine reale della giornata: arrivo reale dell'ultimo treno più gli accessori. */
+    fun fineRealePdm(arrivoRealeUltimoTreno: java.time.LocalDateTime, accessori: Int): java.time.LocalDateTime =
+        arrivoRealeUltimoTreno.plusMinutes(accessori.toLong())
+
+    /** Durata minima della pausa refezione (art. 17.9), in minuti. */
+    const val REFEZIONE_MINUTI = 30
+
+    /**
+     * Accessori di giornata (PdB e PdM): tempo di servizio non in condotta,
+     * meno la refezione e i treni fuori servizio (vuoti verso deposito, né condotta né accessori).
+     */
+    fun accessoriGiornata(lavoro: Int, condotta: Int, refezione: Int, fuoriServizio: Int): Int =
+        (lavoro - condotta - refezione - fuoriServizio).coerceAtLeast(0)
 }

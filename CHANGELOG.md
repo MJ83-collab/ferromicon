@@ -1,5 +1,15 @@
 # Novità
 
+## 0.0.20
+- Benvenuto al primo avvio: funzioni dell'app, avviso legale (app non ufficiale, possibili errori), autore. Si rivede da Impostazioni › Informazioni e responsabilità.
+- Home: saluto «Ciao, [nome]» quando il nome è impostato.
+- Calendario: si scorre tra i mesi con il gesto o con le frecce; si può selezionare un giorno o un intervallo con il pulsante «Periodo», che mostra il riepilogo.
+- Fine giornata: countdown alla fine prescritta; l'arrivo reale dell'ultimo treno si inserisce a mano e la fine reale somma gli accessori.
+- Pianificazione ferie: inserimento di un periodo fisso con date gg/mm/aaaa; riposi e festivi del turno restano esclusi.
+- Calcoli dello staff (ancora senza schermata dedicata): accessori di giornata = lavoro meno condotta, meno refezione e treni fuori servizio.
+
+Versione 0.0.20 (versionCode 20).
+
 ## 0.0.19
 - Profilo «Personale di ufficio» con regole proprie, separate dal capotreno: prestazione ordinaria 7 h 36', straordinario oltre, segnalazione del lavoro notturno.
 - Flessibilità mensile dello staff: saldo con riporto di ±5 h, avviso quando lo supera.

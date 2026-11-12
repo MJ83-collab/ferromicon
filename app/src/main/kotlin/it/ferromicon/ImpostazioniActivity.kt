@@ -2,6 +2,7 @@ package it.ferromicon
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.ArrayAdapter
@@ -47,6 +48,13 @@ class ImpostazioniActivity : Activity() {
         col.addView(etichetta("Il mio nome"))
         col.addView(nota("Dà il nome al tuo profilo: compare nell'agenda e nei calendari che esporti."))
         col.addView(nomeCampo)
+        col.addView(android.widget.Button(this).apply {
+            text = "Informazioni e responsabilità"
+            setOnClickListener {
+                startActivity(Intent(this@ImpostazioniActivity, BenvenutoActivity::class.java)
+                    .putExtra(BenvenutoActivity.EXTRA_INFO, true))
+            }
+        })
         col.addView(etichetta("Il mio profilo"))
         col.addView(nota("Macchinista o capo treno: decide limiti di prestazione, condotta o scorta e indennità."))
         col.addView(profiloScelto)

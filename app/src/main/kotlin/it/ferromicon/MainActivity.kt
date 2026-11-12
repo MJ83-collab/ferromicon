@@ -36,6 +36,16 @@ import java.util.Locale
 class MainActivity : Activity() {
 
     private var mese: YearMonth = YearMonth.now()
+    private var selezionePeriodo = false
+    private var periodoInizio: LocalDate? = null
+    private var periodoFine: LocalDate? = null
+    private lateinit var gesti: android.view.GestureDetector
+
+    /** Lo swipe orizzontale nella scheda Agenda cambia mese; non sostituisce i tocchi sulle celle. */
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (::gesti.isInitialized) gesti.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
+    }
     private lateinit var contenuto: LinearLayout
     private lateinit var titolo: TextView
 
@@ -53,11 +63,27 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!BenvenutoActivity.visto(this)) {
+            startActivity(Intent(this, BenvenutoActivity::class.java))
+            finish()
+            return
+        }
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
         }
 
+        gesti = android.view.GestureDetector(this, object : android.view.GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: android.view.MotionEvent?, e2: android.view.MotionEvent, vx: Float, vy: Float): Boolean {
+                val a = e1 ?: return false
+                val dx = e2.x - a.x
+                val dy = e2.y - a.y
+                if (scheda != Scheda.AGENDA || Math.abs(dx) < dp(96) || Math.abs(dx) < Math.abs(dy) * 1.5f) return false
+                mese = if (dx < 0) mese.plusMonths(1) else mese.minusMonths(1)
+                aggiorna()
+                return true
+            }
+        })
         runCatching { AvvisoPermessi.controllaMensile(this) }
         runCatching { CalendarioTelefono.riallineaDopoAggiornamento(this) }
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -86,7 +112,8 @@ class MainActivity : Activity() {
         barraAzioni = LinearLayout(this).apply { setPadding(dp(12), 0, dp(12), dp(4)) }
         listOf(
             "+ Servizio" to { nuovoServizio() },
-            "+ Assenza" to { nuovaAssenza() }
+            "+ Assenza" to { nuovaAssenza() },
+            "Periodo" to { attivaPeriodo() }
         ).forEach { (etichetta, azione) ->
             barraAzioni.addView(Button(this).apply { text = etichetta; setOnClickListener { azione() } },
                 LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
@@ -164,7 +191,7 @@ class MainActivity : Activity() {
             voce.setTypeface(null, if (scelta) Typeface.BOLD else Typeface.NORMAL)
         }
         title = when (scheda) {
-            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ferromicon" else "Ferromicon · $it" }
+            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ciao" else "Ciao, $it" }
             Scheda.RIEPILOGO -> "Riepilogo del mese"
             Scheda.STRUMENTI -> "Strumenti"
         }
@@ -423,6 +450,8 @@ class MainActivity : Activity() {
     /** Scheda Agenda: prossimo servizio, calendario e l'elenco di servizi e assenze del mese. */
     private fun schedaAgenda(dati: Dati) {
         val r = Analisi.riepilogoMese(dati.servizi, mese, dati.assenze)
+        pannelloFineGiornata(dati)
+        riepilogoPeriodo(dati)
         prossimoServizio(dati)
         bannerTurno(dati)
         val gravi = r.esiti.count { it.gravita == Gravita.VIOLAZIONE }
@@ -834,6 +863,7 @@ class MainActivity : Activity() {
                 cella.text = "${giorno.dayOfMonth}$dormita\n$seconda"
                 val sfondo = when {
                     giorno in violazioni -> Stile.erroreChiaro
+                    inPeriodo(giorno) -> Stile.primarioChiaro
                     servizi.isNotEmpty() -> Stile.okChiaro
                     assenza?.tipo == TipoAssenza.FERIE -> Stile.infoChiaro
                     assenza != null && assenza.tipo.riposo -> Stile.neutroChiaro
@@ -852,7 +882,7 @@ class MainActivity : Activity() {
                     }
                     cella.setTextColor(Stile.testo)
                 }
-                cella.setOnClickListener { giornata(giorno, dati, ordinati) }
+                cella.setOnClickListener { tocco(giorno, dati, ordinati) }
             }
             riga?.addView(cella, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                 setMargins(dp(1), dp(1), dp(1), dp(1))
@@ -864,6 +894,122 @@ class MainActivity : Activity() {
             "S straordinario (sul servizio).", Stile.secondario, 12f)
         testo("Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
             "Tocca un giorno per aggiungere o vedere le voci.", Stile.secondario, 12f)
+    }
+
+    // ---------- selezione di date ----------
+
+    private fun attivaPeriodo() {
+        selezionePeriodo = !selezionePeriodo
+        if (!selezionePeriodo) { periodoInizio = null; periodoFine = null }
+        aggiorna()
+    }
+
+    /** Con la selezione attiva: primo tocco inizio, secondo tocco fine; altrimenti apre la giornata. */
+    private fun tocco(giorno: LocalDate, dati: Dati, ordinati: List<Servizio>) {
+        if (!selezionePeriodo) { giornata(giorno, dati, ordinati); return }
+        val inizio = periodoInizio
+        if (inizio == null || periodoFine != null) {
+            periodoInizio = giorno
+            periodoFine = null
+        } else {
+            periodoFine = giorno
+            if (giorno.isBefore(inizio)) { periodoInizio = giorno; periodoFine = inizio }
+        }
+        aggiorna()
+    }
+
+    private fun inPeriodo(giorno: LocalDate): Boolean {
+        val a = periodoInizio ?: return false
+        val b = periodoFine ?: a
+        return !giorno.isBefore(a) && !giorno.isAfter(b)
+    }
+
+    private fun riepilogoPeriodo(dati: Dati) {
+        val a = periodoInizio ?: return
+        val b = periodoFine ?: a
+        val servizi = dati.servizi.filter { s ->
+            val d = s.turno.inizio.toLocalDate()
+            !d.isBefore(a) && !d.isAfter(b)
+        }
+        val minuti = servizi.sumOf { Duration.between(it.turno.inizio, it.turno.fine).toMinutes() }
+        val assenze = dati.assenze.count { !it.data.isBefore(a) && !it.data.isAfter(b) }
+        sezione("Periodo selezionato")
+        testo("Dal ${fmtGiornoLungo.format(a)}" + (if (b != a) " al ${fmtGiornoLungo.format(b)}" else "") +
+            "\n${servizi.size} servizi · ${ore(minuti)} di lavoro · $assenze assenze", Stile.testo, 14f)
+        voce("Chiudi la selezione", Stile.secondario) { attivaPeriodo() }
+    }
+
+    // ---------- fine della giornata ----------
+
+    private fun arrivoReale(giorno: LocalDate): LocalDateTime? {
+        val v = getSharedPreferences("arrivi-reali", MODE_PRIVATE).getString(giorno.toString(), null) ?: return null
+        val ora = runCatching { java.time.LocalTime.parse(v) }.getOrNull() ?: return null
+        return giorno.atTime(ora)
+    }
+
+    private fun salvaArrivoReale(giorno: LocalDate, ora: java.time.LocalTime) {
+        getSharedPreferences("arrivi-reali", MODE_PRIVATE).edit().putString(giorno.toString(), ora.toString()).apply()
+    }
+
+    /** Countdown alla fine prescritta della giornata di oggi, poi arrivo reale e ritardo da confermare. */
+    private fun pannelloFineGiornata(dati: Dati) {
+        val oggi = LocalDate.now()
+        val servizio = dati.servizi.filter { it.turno.inizio.toLocalDate() == oggi }
+            .minByOrNull { it.turno.inizio } ?: return
+        val prescritta = servizio.turno.fine
+        val mancano = Duration.between(LocalDateTime.now(), prescritta).toMinutes()
+        sezione("Fine giornata")
+        testo(if (mancano > 0) "Fine prescritta ${fmtOra.format(prescritta)} · mancano ${ore(mancano)}"
+            else "Fine prescritta ${fmtOra.format(prescritta)} · già passata", Stile.testo, 15f, true)
+        val reale = arrivoReale(oggi)
+        if (reale == null) {
+            voce("Inserisci l'arrivo reale del treno", Stile.primario) { chiediArrivoReale(oggi) }
+        } else {
+            val scarto = Duration.between(prescritta, reale).toMinutes()
+            testo("Fine reale ${fmtOra.format(reale)} · " + when {
+                scarto > 0 -> "ritardo di $scarto min"
+                scarto < 0 -> "anticipo di ${-scarto} min"
+                else -> "in orario"
+            } + ". Conferma o modifica.", Stile.testo, 14f)
+            voce("Modifica l'arrivo reale", Stile.secondario) { chiediArrivoReale(oggi) }
+        }
+        voce("Cerca il treno su Trenord", Stile.secondario) { cercaTrenord() }
+    }
+
+    private fun chiediArrivoReale(giorno: LocalDate) {
+        val campo = EditText(this).apply {
+            hint = "es. 16:42"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            setText(arrivoReale(giorno)?.toLocalTime()?.toString() ?: "")
+        }
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Arrivo reale del treno")
+            .setView(campo)
+            .setPositiveButton("Conferma") { _, _ ->
+                val ora = runCatching { java.time.LocalTime.parse(campo.text.toString().trim()) }.getOrNull()
+                if (ora == null) Toast.makeText(this, "Orario non valido: scrivi, per esempio, 16:42.", Toast.LENGTH_LONG).show()
+                else { salvaArrivoReale(giorno, ora); aggiorna() }
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
+    }
+
+    /** Copia il numero del treno e apre la pagina Trenord: la ricerca la fai tu, l'app non legge il sito. */
+    private fun cercaTrenord() {
+        val campo = EditText(this).apply { hint = "Numero del treno, es. 25592" }
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Cerca il treno su Trenord")
+            .setView(campo)
+            .setPositiveButton("Apri Trenord") { _, _ ->
+                val numero = campo.text.toString().trim()
+                val appunti = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                appunti.setPrimaryClip(android.content.ClipData.newPlainText("numero treno", numero))
+                Toast.makeText(this, "Numero copiato: incollalo nella ricerca Trenord.", Toast.LENGTH_LONG).show()
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://www.trenord.it/linee-e-orari/circolazione/tempo-reale/")))
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     /** Dialogo di una giornata: voci presenti e inserimento con la data già impostata. */
