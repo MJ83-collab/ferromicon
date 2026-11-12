@@ -24,4 +24,20 @@ class PeriodiFerieTest {
     fun annoSenzaTabellaNonInventaDate() {
         assertNull(PeriodiFerie.invernale('D', 2029))
     }
+
+    @Test
+    fun sequenzaDelGruppoDSegueIlCiclo() {
+        assertEquals('D', PeriodiFerie.letteraPerAnno('D', 2026))
+        assertEquals('A', PeriodiFerie.letteraPerAnno('D', 2027))
+        assertEquals('C', PeriodiFerie.letteraPerAnno('D', 2028))
+        assertEquals('E', PeriodiFerie.letteraPerAnno('D', 2029))
+        assertEquals('F', PeriodiFerie.letteraPerAnno('D', 2030))
+        assertEquals('B', PeriodiFerie.letteraPerAnno('D', 2031))
+        assertEquals('D', PeriodiFerie.letteraPerAnno('D', 2032))
+    }
+
+    @Test
+    fun sequenzaPrimaDelDueMilaVentisei() {
+        assertEquals('B', PeriodiFerie.letteraPerAnno('D', 2025))
+    }
 }

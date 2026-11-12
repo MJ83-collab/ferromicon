@@ -26,4 +26,18 @@ object PeriodiFerie {
     /** Il periodo invernale del gruppo, o null se la tabella di quell'anno non è inserita. */
     fun invernale(lettera: Char, annoInizio: Int): PeriodoFerie? =
         tabelle[annoInizio]?.firstOrNull { it.lettera == lettera.uppercaseChar() }
+
+    /** Ordine ciclico dei gruppi nelle stagioni programmate (accordo 4 aprile 2016, sequenza estate 2026). */
+    private const val SEQUENZA = "DACEFB"
+
+    /**
+     * Lettera del gruppo per un anno, data la lettera dell'anno di partenza (2026).
+     * Il gruppo D del 2026 diventa A nel 2027, C nel 2028, E nel 2029, F nel 2030, B nel 2031, D nel 2032.
+     */
+    fun letteraPerAnno(letteraDi2026: Char, anno: Int): Char {
+        val inizio = SEQUENZA.indexOf(letteraDi2026.uppercaseChar())
+        require(inizio >= 0) { "Lettera di gruppo non valida: $letteraDi2026" }
+        val passi = Math.floorMod(anno - 2026, SEQUENZA.length)
+        return SEQUENZA[Math.floorMod(inizio + passi, SEQUENZA.length)]
+    }
 }
