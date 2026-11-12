@@ -41,6 +41,21 @@ class CercaCidActivity : Activity() {
             text = "Importa elenco (CSV)"
             setOnClickListener { importa() }
         })
+        col.addView(Button(this).apply {
+            text = "Cancella elenco importato"
+            setOnClickListener {
+                AlertDialog.Builder(this@CercaCidActivity)
+                    .setTitle("Cancellare l'elenco?")
+                    .setMessage("L'elenco importato verrà rimosso dal telefono. Puoi importarlo di nuovo quando vuoi.")
+                    .setPositiveButton("Cancella") { _, _ ->
+                        file().delete()
+                        risultati.removeAllViews()
+                        carica()
+                    }
+                    .setNegativeButton("Annulla", null)
+                    .show()
+            }
+        })
         campo = EditText(this).apply {
             hint = "CID o cognome e nome"
             inputType = InputType.TYPE_CLASS_TEXT
@@ -82,11 +97,18 @@ class CercaCidActivity : Activity() {
                 ?: error("file non leggibile")
             val letti = ElencoCid.leggi(testo)
             require(letti.isNotEmpty()) { "nessuna riga valida" }
-            file().writeText(testo)
-            letti.size
-        }.onSuccess { n ->
-            Toast.makeText(this, "Importate $n persone", Toast.LENGTH_SHORT).show()
-            carica()
+            val scartate = testo.lines().drop(1).count { it.isNotBlank() } - letti.size
+            AlertDialog.Builder(this)
+                .setTitle("Importare l'elenco?")
+                .setMessage("Righe valide: ${letti.size}. Righe scartate: $scartate.\n" +
+                    "Sostituisce l'elenco già importato.")
+                .setPositiveButton("Importa") { _, _ ->
+                    file().writeText(testo)
+                    Toast.makeText(this, "Importate ${letti.size} persone", Toast.LENGTH_SHORT).show()
+                    carica()
+                }
+                .setNegativeButton("Annulla", null)
+                .show()
         }.onFailure {
             Toast.makeText(this, "Importazione non riuscita: ${it.message}", Toast.LENGTH_LONG).show()
         }
