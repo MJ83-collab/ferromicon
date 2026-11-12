@@ -1,12 +1,17 @@
 package it.ferromicon
 
 import android.app.Activity
+import android.Manifest
 import android.app.AlertDialog
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -97,6 +102,7 @@ object Aggiornamenti {
                 p.edit().putLong("ultimo", System.currentTimeMillis()).apply()
                 if (codice > versioneAttuale(app).second) {
                     p.edit().putString("nuova", nome).apply()
+                    notificaUnaVolta(app, nome)
                     Esito.Nuova(nome, codice)
                 } else {
                     p.edit().remove("nuova").apply()
@@ -165,6 +171,35 @@ object Aggiornamenti {
     }
 
     /** Controllo all'avvio, con al massimo una richiesta ogni 12 ore. */
+    /** Versione nuova da installare, o null se l'app è aggiornata. Usata dal banner della home. */
+    fun novitaDisponibile(ctx: Context): String? = prefs(ctx).getString("nuova", null)
+
+    private const val CANALE_AGGIORNAMENTI = "aggiornamenti"
+    private const val ID_NOTIFICA_AGGIORNAMENTI = 4401
+
+    /** Notifica di sistema per una versione nuova: una sola volta per ogni versione. */
+    private fun notificaUnaVolta(app: Context, nome: String) {
+        val p = prefs(app)
+        if (p.getString("notificata", null) == nome) return
+        if (Build.VERSION.SDK_INT >= 33 &&
+            app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        val nm = app.getSystemService(NotificationManager::class.java) ?: return
+        nm.createNotificationChannel(NotificationChannel(CANALE_AGGIORNAMENTI, "Aggiornamenti",
+            NotificationManager.IMPORTANCE_DEFAULT))
+        val apri = PendingIntent.getActivity(app, 0,
+            Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val notifica = Notification.Builder(app, CANALE_AGGIORNAMENTI)
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setContentTitle("Nuova versione $nome di Ferromicon")
+            .setContentText("Apri l'app per installarla. I tuoi dati restano nell'app.")
+            .setContentIntent(apri)
+            .setAutoCancel(true)
+            .build()
+        nm.notify(ID_NOTIFICA_AGGIORNAMENTI, notifica)
+        p.edit().putString("notificata", nome).apply()
+    }
+
     fun controllaInSilenzio(a: Activity) {
         if (!automatico(a)) return
         controlla(a, false) { if (it is Esito.Nuova) proponi(a, it) }
