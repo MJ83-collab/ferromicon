@@ -32,7 +32,7 @@ data class Servizio(
     /** Collega di equipaggio (capo treno o macchinista). */
     val secondoAgente: String = "",
     /** Giornata del turno dell'impianto da cui deriva questo servizio (vuoto = inserito a mano). */
-    val origineTurno: String = ""
+    val origineTurno: String = "",
     /** Straordinario: lavoro in più rispetto al turno previsto (codice S nel calendario). */
     val straordinario: Boolean = false,
 ) {
@@ -201,7 +201,7 @@ data class Impostazioni(
     /** CID (matricola) dell'utente: serve a trovare il suo calendario nei PDF dell'impianto. */
     val cid: String = "",
     /** Nome dell'utente: dà il nome al suo profilo (agenda, calendari, esportazioni). */
-    val nome: String = ""
+    val nome: String = "",
     /** Giorni di congedo parentale spettanti nell'anno (0 = non impostato). */
     val parentaliSpettanti: Int = 0,
 ) {
