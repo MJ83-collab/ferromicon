@@ -830,7 +830,8 @@ class MainActivity : Activity() {
             })
         }
         testo("Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
-            "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · A altra assenza · " +
+            "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · CA chiusura aziendale · " +
+            "A altra assenza · " +
             "S straordinario (sul servizio).", Stile.secondario, 12f)
         testo("Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
             "Tocca un giorno per aggiungere o vedere le voci.", Stile.secondario, 12f)
