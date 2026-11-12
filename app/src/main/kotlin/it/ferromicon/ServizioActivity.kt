@@ -410,8 +410,7 @@ class ServizioActivity : Activity() {
             btnArrivoReale.text = "Arrivo reale " + (arrivoReale?.let { fmtOra.format(it) } ?: "—")
         }
         fun ora(iniziale: LocalTime, imposta: (LocalTime) -> Unit) =
-            TimePickerDialog(this, { _, h, m -> imposta(LocalTime.of(h, m)); aggiorna() },
-                iniziale.hour, iniziale.minute, true).show()
+            chiediOra(iniziale) { imposta(it); aggiorna() }
         btnPartenza.setOnClickListener { ora(partenza) { partenza = it } }
         btnArrivo.setOnClickListener { ora(arrivo) { arrivo = it } }
         btnPartenzaReale.setOnClickListener { ora(partenzaReale ?: partenza) { partenzaReale = it } }
@@ -669,10 +668,30 @@ class ServizioActivity : Activity() {
 
     private fun scegliOra(inizio: Boolean) {
         val ora = if (inizio) oraInizio else oraFine
-        TimePickerDialog(this, { _, h, m ->
-            if (inizio) oraInizio = LocalTime.of(h, m) else oraFine = LocalTime.of(h, m)
+        chiediOra(ora) {
+            if (inizio) oraInizio = it else oraFine = it
             aggiornaBottoni()
-        }, ora.hour, ora.minute, true).show()
+        }
+    }
+
+    /** Orario digitato come HHmm (0840) o HH:mm; chiede di nuovo se il valore non è valido. */
+    private fun chiediOra(iniziale: LocalTime, alOk: (LocalTime) -> Unit) {
+        val campo = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = "HHmm, es. 0840"
+            setText(OraInput.formato(iniziale))
+            setSelectAllOnFocus(true)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Ora")
+            .setView(campo.apply { setPadding(dp(20), dp(8), dp(20), 0) })
+            .setPositiveButton("OK") { _, _ ->
+                val nuova = OraInput.parse(campo.text.toString())
+                if (nuova == null) Toast.makeText(this, "Ora non valida: usa HHmm, es. 0840", Toast.LENGTH_LONG).show()
+                else alOk(nuova)
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     private fun aggiornaBottoni() {

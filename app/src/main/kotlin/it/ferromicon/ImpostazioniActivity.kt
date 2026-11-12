@@ -1,6 +1,7 @@
 package it.ferromicon
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -54,6 +55,20 @@ class ImpostazioniActivity : Activity() {
         col.addView(nota("Dà il nome al tuo profilo: compare nell'agenda e nei calendari che esporti."))
         col.addView(nomeCampo)
         col.addView(etichetta("Impianto di appartenenza")); col.addView(impiantoScelto)
+        if (imp.cid.isNotBlank()) {
+            col.addView(nota("CID ${imp.cid}" + if (imp.impianto.isNotBlank()) " · ${imp.impianto}" else ""))
+            col.addView(Button(this).apply {
+                text = "Controlla CID e impianto"
+                setOnClickListener {
+                    AlertDialog.Builder(this@ImpostazioniActivity)
+                        .setTitle("CID e impianto sono giusti?")
+                        .setMessage("CID ${imp.cid}" + if (imp.impianto.isNotBlank()) "\nImpianto attuale: ${imp.impianto}" else "")
+                        .setPositiveButton("Sì, è giusto", null)
+                        .setNegativeButton("Modifica impianto") { _, _ -> impiantoScelto.performClick() }
+                        .show()
+                }
+            })
+        }
         col.addView(android.widget.Button(this).apply {
             text = "Informazioni e responsabilità"
             setOnClickListener {
