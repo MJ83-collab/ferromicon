@@ -407,6 +407,7 @@ object Archivio {
         put("parentaliSpettanti", i.parentaliSpettanti)
         put("permessiSpettanti", i.permessiSpettanti)
         put("promemoriaMinuti", i.promemoriaMinuti)
+        put("letteraGruppoFerie", i.letteraGruppoFerie?.toString() ?: "")
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
             put("diurno", it.diurnoMinuti); put("notturno", it.notturnoMinuti)
         }) }
@@ -433,6 +434,7 @@ object Archivio {
         parentaliSpettanti = o.optInt("parentaliSpettanti", 0),
         permessiSpettanti = o.optInt("permessiSpettanti", 0),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
+        letteraGruppoFerie = o.optString("letteraGruppoFerie", "").firstOrNull()?.uppercaseChar(),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {
             LimitiOrario(it.optInt("diurno", 510), it.optInt("notturno", 420))
         },

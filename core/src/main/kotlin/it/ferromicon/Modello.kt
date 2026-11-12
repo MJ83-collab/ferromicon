@@ -187,6 +187,8 @@ data class Impostazioni(
     val permessiAggiuntivi: Int = 0,
     /** Minuti di preavviso del promemoria prima del servizio; 0 = disattivato. */
     val promemoriaMinuti: Int = 60,
+    /** Lettera del gruppo ferie (A–F) nel 2026; null = non impostata. */
+    val letteraGruppoFerie: Char? = null,
     /** Limiti di prestazione personalizzati; null = limiti del contratto Altarail. */
     val limitiOrario: LimitiOrario? = null,
     /** Scelte manuali sul recupero delle festività: vero = recuperabile, falso = non recuperabile. */
