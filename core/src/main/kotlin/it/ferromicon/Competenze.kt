@@ -78,7 +78,7 @@ object Competenze {
     /** Salario professionale mensile (CCNL 2025, art. 72; Altarail art. 53). */
     fun salarioProfessionale(p: Profilo) = when (p) {
         Profilo.MACCHINISTA -> 208.96
-        Profilo.CAPOTRENO -> 142.54
+        Profilo.CAPOTRENO, Profilo.UFFICIO -> 142.54
     }
 
     fun minimo(livello: Livello, data: LocalDate): Double {
@@ -184,7 +184,7 @@ object Competenze {
         val notturno = RegoleAltarail.èNotturno(t)
         return when (t.profilo) {
             Profilo.MACCHINISTA -> if (notturno) 7 * 60 else 8 * 60 + 30
-            Profilo.CAPOTRENO -> if (notturno) 8 * 60 else 10 * 60
+            Profilo.CAPOTRENO, Profilo.UFFICIO -> if (notturno) 8 * 60 else 10 * 60
         }
     }
 

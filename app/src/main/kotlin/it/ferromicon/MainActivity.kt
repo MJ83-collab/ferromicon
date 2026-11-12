@@ -58,7 +58,7 @@ class MainActivity : Activity() {
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
         }
 
-        AvvisoPermessi.controllaMensile(this)
+        runCatching { AvvisoPermessi.controllaMensile(this) }
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         radice.setOnApplyWindowInsetsListener { v, insets ->
             v.setPadding(0, insetAlto(insets), 0, insetBasso(insets))
@@ -196,7 +196,8 @@ class MainActivity : Activity() {
             Strumento("⬆️", "Aggiornamenti", Aggiornamenti.riga(this), 24),
             Strumento("💶", "Straordinario netto", "Quanto resta in tasca", 16),
             Strumento("🏠", "Perimetri di residenza", "Ore fuori residenza", 15),
-            Strumento("📖", "Wiki Ferrovia", "Tempi accessori, abbreviazioni, permessi: senza connessione", 40)
+            Strumento("📖", "Wiki Ferrovia", "Tempi accessori, abbreviazioni, permessi: senza connessione", 40),
+            Strumento("🧮", "Cartellino SAP", "Importa il PDF: timbrature e flessibilità", 41)
         ))
         gruppo("Orari e rubrica", listOf(
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
@@ -252,6 +253,7 @@ class MainActivity : Activity() {
     private fun esegui(id: Int) {
         when (id) {
             40 -> startActivity(Intent(this, WikiActivity::class.java))
+            41 -> startActivity(Intent(this, CartellinoSapActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/json"
@@ -369,7 +371,7 @@ class MainActivity : Activity() {
         titolo.text = "${nomeMese.replaceFirstChar { c -> c.titlecase(locale) }} ${mese.year}"
         contenuto.removeAllViews()
         destinazione = contenuto
-        AvvisoPermessi.testo(Archivio.caricaTutto(this))?.let { avviso ->
+        runCatching { AvvisoPermessi.testo(Archivio.caricaTutto(this)) }.getOrNull()?.let { avviso ->
             contenuto.addView(TextView(this).apply {
                 text = avviso
                 setTextColor(Stile.testo)
