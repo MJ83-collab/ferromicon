@@ -242,7 +242,7 @@ class ServizioActivity : Activity() {
             materiale = materiale.text.toString().trim(),
             secondoAgente = secondoAgente.text.toString().trim(),
             origineTurno = esistente?.origineTurno ?: "",
-            righe = righe.sortedBy { it.partenza }
+            righe = Righe.applicaCollegamenti(righe.toList())
         )
         return servizio.conRigheApplicate()
     }
@@ -284,7 +284,8 @@ class ServizioActivity : Activity() {
 
     private fun mostraRighe() {
         elencoRighe.removeAllViews()
-        righe.sortBy { it.partenza }
+        val applicate = Righe.applicaCollegamenti(righe.toList())
+        righe.clear(); righe.addAll(applicate)
         righe.forEachIndexed { i, r ->
             val ritardo = r.arrivoReale?.let { java.time.Duration.between(r.arrivo, it).toMinutes() }
             val tratta = listOf(r.da, r.a).filter { it.isNotBlank() }.joinToString(" → ")
@@ -293,6 +294,7 @@ class ServizioActivity : Activity() {
                     append(if (r.numero.isBlank()) r.tipo.etichetta else "${r.numero} · ${r.tipo.etichetta.lowercase()}")
                     append("  ${fmtOra.format(r.partenza)}–${fmtOra.format(r.arrivo)}")
                     if (tratta.isNotEmpty()) append("\n    $tratta")
+                    if (r.collegamento.isNotEmpty()) append("  [${r.collegamento}]")
                     if (ritardo != null) append(when {
                         ritardo > 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} (+$ritardo')"
                         ritardo < 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} ($ritardo')"
@@ -311,6 +313,10 @@ class ServizioActivity : Activity() {
                     true
                 }
             })
+            if (i > 0) elencoRighe.addView(Button(this).apply {
+                text = "Collega alla precedente: " + etichettaCollegamento(r.collegamento)
+                setOnClickListener { scegliCollegamento(i) }
+            })
         }
         aggiornaCondottaDaRighe()
     }
@@ -327,6 +333,26 @@ class ServizioActivity : Activity() {
         condotta.setText(oreMinuti(s.turno.minutiCondotta).ifEmpty { "0:00" })
         consecutiva.setText(oreMinuti(s.turno.maxCondottaConsecutiva).ifEmpty { "0:00" })
         notaCondotta.text = "Calcolata dalle righe (con gli orari reali, se inseriti)."
+    }
+
+    private fun etichettaCollegamento(c: String) = when (c) {
+        "O" -> "orario"
+        "S" -> "stazione"
+        "OS" -> "orario e stazione"
+        else -> "nessuno"
+    }
+
+    /** Sceglie come la riga [i] è collegata a quella precedente. */
+    private fun scegliCollegamento(i: Int) {
+        val valori = listOf("", "O", "S", "OS")
+        AlertDialog.Builder(this)
+            .setTitle("Collegamento alla riga precedente")
+            .setItems(valori.map { etichettaCollegamento(it).replaceFirstChar { c -> c.uppercase() } }.toTypedArray()) { _, scelta ->
+                righe[i] = righe[i].copy(collegamento = valori[scelta])
+                mostraRighe()
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     /** Dialogo di inserimento o modifica di una riga; [indice] null per una riga nuova. */
@@ -406,7 +432,8 @@ class ServizioActivity : Activity() {
                     partenza = p, arrivo = arr,
                     tipo = TipoRiga.values()[tipo.selectedItemPosition],
                     partenzaReale = reale(partenzaReale, p),
-                    arrivoReale = reale(arrivoReale, arr)
+                    arrivoReale = reale(arrivoReale, arr),
+                    collegamento = esistente?.collegamento ?: ""
                 )
                 if (indice == null) righe += nuova else righe[indice] = nuova
                 mostraRighe()

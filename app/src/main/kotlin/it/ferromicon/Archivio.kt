@@ -273,6 +273,7 @@ object Archivio {
                 put("tipo", r.tipo.name)
                 put("partenzaReale", r.partenzaReale?.toString() ?: "")
                 put("arrivoReale", r.arrivoReale?.toString() ?: "")
+                put("collegamento", r.collegamento)
             })
         }
     }
@@ -284,7 +285,8 @@ object Archivio {
             arrivo = LocalDateTime.parse(it.getString("arrivo")),
             tipo = runCatching { TipoRiga.valueOf(it.getString("tipo")) }.getOrDefault(TipoRiga.ALTRO),
             partenzaReale = data(it, "partenzaReale"),
-            arrivoReale = data(it, "arrivoReale")
+            arrivoReale = data(it, "arrivoReale"),
+            collegamento = it.optString("collegamento", "")
         )
     }
 

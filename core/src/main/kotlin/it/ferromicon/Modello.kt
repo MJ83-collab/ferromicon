@@ -79,7 +79,9 @@ data class RigaTreno(
     val arrivo: LocalDateTime,
     val tipo: TipoRiga = TipoRiga.CONDOTTA,
     val partenzaReale: LocalDateTime? = null,
-    val arrivoReale: LocalDateTime? = null
+    val arrivoReale: LocalDateTime? = null,
+    /** Collegamento con la riga precedente: "" nessuno, "O" orario, "S" stazione, "OS" entrambi. */
+    val collegamento: String = "",
 ) {
     val inizioEffettivo: LocalDateTime get() = partenzaReale ?: partenza
     val fineEffettiva: LocalDateTime get() = arrivoReale ?: arrivo
@@ -87,6 +89,28 @@ data class RigaTreno(
 
 /** Calcoli sulle righe di un servizio. */
 object Righe {
+
+    /**
+     * Applica i collegamenti tra righe consecutive (ordinate per partenza).
+     * "O": il ritardo all'arrivo della riga precedente passa alla riga collegata (orari reali).
+     * "S": la stazione di partenza diventa quella di arrivo della riga precedente.
+     */
+    fun applicaCollegamenti(righe: List<RigaTreno>): List<RigaTreno> {
+        val out = righe.sortedBy { it.partenza }.toMutableList()
+        for (i in 1 until out.size) {
+            val c = out[i].collegamento
+            if (c.isEmpty()) continue
+            val prec = out[i - 1]
+            var r = out[i]
+            if (c.contains('O') && prec.arrivoReale != null) {
+                val ritardo = Duration.between(prec.arrivo, prec.arrivoReale)
+                r = r.copy(partenzaReale = r.partenza.plus(ritardo), arrivoReale = r.arrivo.plus(ritardo))
+            }
+            if (c.contains('S') && prec.a.isNotBlank()) r = r.copy(da = prec.a)
+            out[i] = r
+        }
+        return out
+    }
 
     /** Soste inferiori a 15 minuti tra due treni contano come condotta continuativa (Altarail art. 17.7.1). */
     const val SOSTA_MINIMA = 15L
