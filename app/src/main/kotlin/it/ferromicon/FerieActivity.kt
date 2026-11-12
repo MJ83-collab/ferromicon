@@ -92,8 +92,8 @@ class FerieActivity : Activity() {
                 }
                 Archivio.salvaTutto(this@FerieActivity,
                     dati.copy(impostazioni = dati.impostazioni.copy(letteraGruppoFerie = l)))
-                val lettera = PeriodiFerie.letteraPerAnno(l, a)
-                val periodo = PeriodiFerie.invernale(lettera, a)
+                val lettera = FerieInvernali.letteraPerAnno(l, a)
+                val periodo = FerieInvernali.invernale(lettera, a)
                 esito.text = if (periodo != null)
                     "Nel $a il gruppo è $lettera: ${periodo.nome}, dal ${fmtData.format(periodo.da)} al ${fmtData.format(periodo.a)}."
                 else
