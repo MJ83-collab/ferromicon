@@ -13,8 +13,8 @@ android {
         applicationId = "it.ferromicon"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.0.9"
+        versionCode = 10
+        versionName = "0.0.10"
     }
 
     // Chiave di firma fissa (così l'APK si installa sopra quello precedente). Il file della chiave non sta
