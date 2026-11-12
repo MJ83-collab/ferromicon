@@ -127,4 +127,14 @@ object OrarioStaff {
     /** Fine reale della giornata: arrivo reale dell'ultimo treno più gli accessori. */
     fun fineRealePdm(arrivoRealeUltimoTreno: java.time.LocalDateTime, accessori: Int): java.time.LocalDateTime =
         arrivoRealeUltimoTreno.plusMinutes(accessori.toLong())
+
+    /** Durata minima della pausa refezione (art. 17.9), in minuti. */
+    const val REFEZIONE_MINUTI = 30
+
+    /**
+     * Accessori di giornata (PdB e PdM): tempo di servizio non in condotta,
+     * meno la refezione e i treni fuori servizio (vuoti verso deposito, né condotta né accessori).
+     */
+    fun accessoriGiornata(lavoro: Int, condotta: Int, refezione: Int, fuoriServizio: Int): Int =
+        (lavoro - condotta - refezione - fuoriServizio).coerceAtLeast(0)
 }
