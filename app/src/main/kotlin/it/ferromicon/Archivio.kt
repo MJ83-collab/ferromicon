@@ -294,6 +294,7 @@ object Archivio {
         put("secondoAgente", s.secondoAgente)
         put("origineTurno", s.origineTurno)
         put("righe", righeAJson(s.righe))
+        put("straordinario", s.straordinario)
     }
 
     private fun servizioDa(o: JSONObject) = Servizio(
@@ -315,7 +316,8 @@ object Archivio {
         materiale = o.optString("materiale", ""),
         secondoAgente = o.optString("secondoAgente", ""),
         origineTurno = o.optString("origineTurno", ""),
-        righe = righeDa(o.optJSONArray("righe"))
+        righe = righeDa(o.optJSONArray("righe")),
+        straordinario = o.optBoolean("straordinario", false)
     )
 
     private fun turnoAJson(t: TurnoImpianto) = JSONObject().apply {
@@ -390,6 +392,7 @@ object Archivio {
         put("orarioSuSeiGiorni", i.orarioSuSeiGiorni)
         put("ferieResidueAnnoPrecedente", i.ferieResidueAnnoPrecedente)
         put("permessiAggiuntivi", i.permessiAggiuntivi)
+        put("parentaliSpettanti", i.parentaliSpettanti)
         put("promemoriaMinuti", i.promemoriaMinuti)
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
             put("diurno", it.diurnoMinuti); put("notturno", it.notturnoMinuti)
@@ -414,6 +417,7 @@ object Archivio {
         orarioSuSeiGiorni = o.optBoolean("orarioSuSeiGiorni", false),
         ferieResidueAnnoPrecedente = o.optInt("ferieResidueAnnoPrecedente", 0),
         permessiAggiuntivi = o.optInt("permessiAggiuntivi", 0),
+        parentaliSpettanti = o.optInt("parentaliSpettanti", 0),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {
             LimitiOrario(it.optInt("diurno", 510), it.optInt("notturno", 420))

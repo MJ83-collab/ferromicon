@@ -33,6 +33,8 @@ data class Servizio(
     val secondoAgente: String = "",
     /** Giornata del turno dell'impianto da cui deriva questo servizio (vuoto = inserito a mano). */
     val origineTurno: String = ""
+    /** Straordinario: lavoro in più rispetto al turno previsto (codice S nel calendario). */
+    val straordinario: Boolean = false,
 ) {
     /** Ritardo all'arrivo dell'ultima riga con orario reale, in minuti (negativo = anticipo). */
     val ritardoFinale: Long
@@ -150,7 +152,16 @@ enum class TipoAssenza(val etichetta: String, val simbolo: String, val riposo: B
     /** Giornata di disponibilità non utilizzata: vale 1/5 dell'orario settimanale. */
     DISPONIBILITA("Disponibilità", "📟", false),
     MALATTIA("Malattia", "🤒", false),
-    ALTRO("Altra assenza", "📌", false)
+    INFORTUNIO("Infortunio", "🩹", false),
+    PARENTALE("Giorno parentale", "👶", false),
+    ALTRO("Altra assenza", "📌", false);
+
+    /** Codice breve per il calendario e la legenda. */
+    val codice: String get() = when (this) {
+        RIPOSO_SETTIMANALE -> "RS"; RIPOSO -> "R"; RECUPERO_FESTIVO -> "RF"; FERIE -> "F"
+        PERMESSO_EX_FESTIVITA -> "PF"; PERMESSO -> "P"; DISPONIBILITA -> "D"; MALATTIA -> "M"
+        INFORTUNIO -> "I"; PARENTALE -> "PG"; ALTRO -> "A"
+    }
 }
 
 /** Una giornata senza servizio. */
@@ -189,6 +200,8 @@ data class Impostazioni(
     val cid: String = "",
     /** Nome dell'utente: dà il nome al suo profilo (agenda, calendari, esportazioni). */
     val nome: String = ""
+    /** Giorni di congedo parentale spettanti nell'anno (0 = non impostato). */
+    val parentaliSpettanti: Int = 0,
 ) {
     /** Profilo da usare per i nuovi servizi. */
     val profiloAttivo: Profilo get() = profilo ?: Profilo.MACCHINISTA

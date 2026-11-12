@@ -443,6 +443,13 @@ class MainActivity : Activity() {
         if (qualita.isNotEmpty()) testo("Riposi giornalieri: " +
             qualita.entries.joinToString(" · ") { "${it.value} ${it.key.etichetta}" }, Stile.secondario, 13f)
 
+        // Parentali: presi nell'anno e quelli che restano
+        val parentaliPresi = r.assenzeAnno[TipoAssenza.PARENTALE] ?: 0
+        val parentaliSpettanti = dati.impostazioni.parentaliSpettanti
+        testo(if (parentaliSpettanti > 0)
+            "Parentali: presi $parentaliPresi su $parentaliSpettanti, restano ${(parentaliSpettanti - parentaliPresi).coerceAtLeast(0)}"
+            else "Parentali: presi $parentaliPresi (imposta i giorni spettanti nelle Impostazioni)", Stile.secondario)
+
         // Da inizio anno: 52 riposi settimanali e 52 giornate di riposo (Altarail art. 17.6.1)
         val a = r.assenzeAnno
         testo(
@@ -789,8 +796,9 @@ class MainActivity : Activity() {
                 val servizi = serviziPerGiorno[giorno].orEmpty()
                 val assenza = assenzePerGiorno[giorno]
                 val seconda = when {
-                    servizi.isNotEmpty() -> fmtOra.format(servizi.first().turno.inizio)
-                    assenza != null -> assenza.tipo.simbolo
+                    servizi.isNotEmpty() -> fmtOra.format(servizi.first().turno.inizio) +
+                        if (servizi.any { it.straordinario }) " S" else ""
+                    assenza != null -> assenza.tipo.codice
                     else -> " "
                 }
                 val dormita = if (giorno in dormite) "💤" else ""
@@ -821,6 +829,9 @@ class MainActivity : Activity() {
                 setMargins(dp(1), dp(1), dp(1), dp(1))
             })
         }
+        testo("Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
+            "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · A altra assenza · " +
+            "S straordinario (sul servizio).", Stile.secondario, 12f)
         testo("Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
             "Tocca un giorno per aggiungere o vedere le voci.", Stile.secondario, 12f)
     }
@@ -873,6 +884,12 @@ class MainActivity : Activity() {
         dati.preferiti.sortedBy { it.nome }.forEach { p ->
             voci += "⭐ ${p.nome} ${fmtOra.format(p.oraInizio)}–${fmtOra.format(p.oraFine)}" to {
                 Archivio.aggiornaOInserisci(this, p.applica(giorno, System.currentTimeMillis())); aggiorna()
+            }
+        }
+        servizi.forEach { s ->
+            val etichetta = if (s.straordinario) "⏱ Togli straordinario" else "⏱ Segna come straordinario"
+            voci += etichetta to {
+                Archivio.aggiornaOInserisci(this, s.copy(straordinario = !s.straordinario)); aggiorna()
             }
         }
         if (dati.assenze.any { it.data == giorno && it.tipo.riposo }) {
