@@ -104,6 +104,11 @@ class ImpostazioniActivity : Activity() {
         col.addView(nota("Da 1 a 3 per il personale ex FS (Altarail art. 20). Lascia 0 se non ne hai."))
         col.addView(permessi)
 
+        val parentali = numero(imp.parentaliSpettanti)
+        col.addView(etichetta("Giorni parentali spettanti nell'anno"))
+        col.addView(nota("Il riepilogo mostra quanti ne hai presi e quanti ne restano. Lascia 0 se non lo sai."))
+        col.addView(parentali)
+
         val promemoria = Spinner(this).apply {
             adapter = ArrayAdapter(this@ImpostazioniActivity, android.R.layout.simple_spinner_dropdown_item,
                 opzioniPromemoria.map { if (it == 0) "Disattivato" else "$it minuti prima" })
@@ -192,6 +197,7 @@ class ImpostazioniActivity : Activity() {
                     orarioSuSeiGiorni = seiGiorni.isChecked,
                     ferieResidueAnnoPrecedente = ferieResidue.text.toString().toIntOrNull() ?: 0,
                     permessiAggiuntivi = permessi.text.toString().toIntOrNull() ?: 0,
+                    parentaliSpettanti = parentali.text.toString().toIntOrNull() ?: 0,
                     promemoriaMinuti = opzioniPromemoria[promemoria.selectedItemPosition],
                     redditoAnnuo = reddito.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0,
                     inpsPct = inpsPct.text.toString().replace(',', '.').toDoubleOrNull() ?: 9.19,

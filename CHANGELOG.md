@@ -1,6 +1,15 @@
 # Novità
 
-Versione 0.0.10 (versionCode 10). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.11 (versionCode 11). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.11
+- Aggiornamenti: banner in home quando è disponibile una versione nuova, e notifica di sistema una sola volta per versione.
+- Riposi: «Sposta questo riposo» dal menu del giorno, verso una data libera.
+- Codici nel calendario e legenda: M malattia, I infortunio, F ferie, P permesso, PG giorno parentale, R riposo, RS riposo settimanale, RF recupero festivo, D disponibilità, A altra assenza.
+- Straordinario: «Segna come straordinario» sul servizio del giorno; nel calendario compare S accanto all'orario.
+- Parentali: riepilogo dei giorni presi e di quelli che restano; il numero spettante si imposta nelle Impostazioni.
+- Calendario agente: i tre caricamenti sono in una scheda unica.
+- Testi visibili: «Altarail» sostituito con «Azienda» (riferimenti normativi invariati).
 
 ## 0.0.10
 - Aggiornamenti: ogni esito dell'installazione viene mostrato (conferma, successo, errore con codice). Se la conferma di Android non si apre, l'app lo dice.
