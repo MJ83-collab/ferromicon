@@ -686,6 +686,20 @@ class MainActivity : Activity() {
     }
 
     /** Inserimento di una o più giornate senza servizio (da ... a ...). */
+    /** Sposta il riposo di [giorno] in un'altra data scelta dal calendario. */
+    private fun sceltaNuovoGiornoRiposo(giorno: LocalDate) {
+        DatePickerDialog(this, { _, y, m, d ->
+            val nuovo = LocalDate.of(y, m + 1, d)
+            if (Archivio.spostaRiposo(this, giorno, nuovo)) {
+                Toast.makeText(this, "Riposo spostato al ${fmtGiornoLungo.format(nuovo)}", Toast.LENGTH_LONG).show()
+                aggiorna()
+            } else {
+                Toast.makeText(this, "Non posso spostarlo: quel giorno ha già un servizio o un'assenza.",
+                    Toast.LENGTH_LONG).show()
+            }
+        }, giorno.year, giorno.monthValue - 1, giorno.dayOfMonth).show()
+    }
+
     private fun nuovaAssenza(giorno: LocalDate? = null) {
         val oggi = giorno ?: if (YearMonth.now() == mese) LocalDate.now() else mese.atDay(1)
         var da = oggi
@@ -860,6 +874,9 @@ class MainActivity : Activity() {
             voci += "⭐ ${p.nome} ${fmtOra.format(p.oraInizio)}–${fmtOra.format(p.oraFine)}" to {
                 Archivio.aggiornaOInserisci(this, p.applica(giorno, System.currentTimeMillis())); aggiorna()
             }
+        }
+        if (dati.assenze.any { it.data == giorno && it.tipo.riposo }) {
+            voci += "🔄 Sposta questo riposo" to { sceltaNuovoGiornoRiposo(giorno) }
         }
         voci += "+ Assenza o riposo" to { nuovaAssenza(giorno) }
 
