@@ -1,6 +1,10 @@
 # Novità
 
-Versione 0.0.13 (versionCode 13). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.14 (versionCode 14). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.14
+- Aggiornamenti: l'APK viene scaricato in una cartella visibile dal gestore file e poi si apre l'installazione di Android. Prima l'app usava la sessione dell'installatore, che con l'app aperta falliva con «deve essere chiuso durante l'aggiornamento».
+- Se l'installazione non si apre, l'app dice dove si trova il file scaricato.
 
 ## 0.0.13
 - Cartellino SAP: in Strumenti si sceglie il PDF stampato dal cartellino. L'app legge timbrature e flessibilità di ogni giorno e mostra il risultato; si salva solo dopo conferma. «Mostra il testo letto» serve a controllare la lettura.

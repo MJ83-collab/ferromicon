@@ -13,8 +13,8 @@ android {
         applicationId = "it.ferromicon"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "0.0.13"
+        versionCode = 14
+        versionName = "0.0.14"
     }
 
     // Chiave di firma fissa (così l'APK si installa sopra quello precedente). Il file della chiave non sta
@@ -64,4 +64,5 @@ dependencies {
     implementation(project(":core"))
     // Lettura del testo dei PDF (cedolini e CU), tutto sul telefono
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("androidx.core:core:1.13.1")
 }
