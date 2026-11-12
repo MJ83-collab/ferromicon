@@ -2,6 +2,8 @@ package it.ferromicon
 
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -39,5 +41,23 @@ class PeriodiFerieTest {
     @Test
     fun sequenzaPrimaDelDueMilaVentisei() {
         assertEquals('B', PeriodiFerie.letteraPerAnno('D', 2025))
+    }
+
+    @Test
+    fun pianoDel2026GruppoDConRiposiB() {
+        val p = PeriodiFerie.piano(2026, 'D', 'B')
+        assertEquals('D', p.lettera)
+        assertEquals(LocalDate.of(2027, 4, 25), p.periodo!!.da)
+        assertEquals(2, p.riposiNelPeriodo)
+        assertTrue(p.riposiVerificati)
+    }
+
+    @Test
+    fun pianoDel2029SenzaTabella() {
+        val p = PeriodiFerie.piano(2029, 'D', 'B')
+        assertEquals('E', p.lettera)
+        assertNull(p.periodo)
+        assertNull(p.riposiNelPeriodo)
+        assertFalse(p.riposiVerificati)
     }
 }

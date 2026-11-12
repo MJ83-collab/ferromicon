@@ -40,4 +40,26 @@ object PeriodiFerie {
         val passi = Math.floorMod(anno - 2026, SEQUENZA.length)
         return SEQUENZA[Math.floorMod(inizio + passi, SEQUENZA.length)]
     }
+
+    /**
+     * Piano di un anno: lettera del gruppo e, se la tabella c'è, periodo invernale.
+     * I riposi della sequenza sono contati nel periodo e valgono solo fino al 07/01/2028 verificato:
+     * oltre, il calcolo presuppone che il ciclo continui.
+     */
+    fun piano(anno: Int, letteraDi2026: Char, sequenza: Char): PianoAnno {
+        val lettera = letteraPerAnno(letteraDi2026, anno)
+        val periodo = invernale(lettera, anno)
+        val riposi = periodo?.let { CalendarioRiposi.riposi(sequenza, it.da, it.a) }
+        val verificato = periodo?.let { !it.a.isAfter(CalendarioRiposi.ultimoVerificato) } ?: false
+        return PianoAnno(anno, lettera, periodo, riposi, verificato)
+    }
 }
+
+/** Piano di un anno: lettera, periodo (se noto), riposi nel periodo e se è nel calendario verificato. */
+data class PianoAnno(
+    val anno: Int,
+    val lettera: Char,
+    val periodo: PeriodoFerie?,
+    val riposiNelPeriodo: Int?,
+    val riposiVerificati: Boolean,
+)

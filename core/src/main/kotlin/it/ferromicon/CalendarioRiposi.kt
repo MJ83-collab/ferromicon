@@ -22,4 +22,12 @@ object CalendarioRiposi {
         val offset = Math.floorMod(indice - 1 - blocco, 7L)
         return ciclo[Math.floorMod(giorni + offset, 7L).toInt()]
     }
+
+    /** Ultima data verificata sul calendario ORSA. */
+    val ultimoVerificato: LocalDate = LocalDate.of(2028, 1, 7)
+
+    /** Numero di giorni di riposo (GRS o RIP) della sequenza nell'intervallo, estremi inclusi. */
+    fun riposi(sequenza: Char, da: LocalDate, a: LocalDate): Int =
+        generateSequence(da) { it.plusDays(1) }.takeWhile { !it.isAfter(a) }
+            .count { codice(sequenza, it) == "GRS" || codice(sequenza, it) == "RIP" }
 }
