@@ -220,6 +220,12 @@ object Aggiornamenti {
         controlla(a, false) { if (it is Esito.Nuova) proponi(a, it) }
     }
 
+    /** All'apertura dell'app: controllo sempre, senza attendere le 12 ore; propone solo se c'è una versione nuova. */
+    fun controllaAllAvvio(a: Activity) {
+        if (!automatico(a)) return
+        controlla(a, true) { if (it is Esito.Nuova) proponi(a, it) }
+    }
+
     /** Voce «Aggiornamenti» degli Strumenti: controllo subito e risposta in ogni caso. */
     fun controllaSubito(a: Activity) {
         Toast.makeText(a, "Cerco aggiornamenti…", Toast.LENGTH_SHORT).show()

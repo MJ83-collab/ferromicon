@@ -68,6 +68,7 @@ class MainActivity : Activity() {
             finish()
             return
         }
+        if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
