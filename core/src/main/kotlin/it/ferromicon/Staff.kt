@@ -67,8 +67,11 @@ object OrarioStaff {
     fun saldoMese(giornate: List<GiornataSap>, riportoPrecedente: Int = 0): Int =
         riportoPrecedente + giornate.sumOf { g -> g.flex?.let { minutiFlex(it) } ?: 0 }
 
-    /** Giornate lavorate con meno di 4 timbrature (il minimo del vademecum). Le giornate senza timbrature (ferie, riposi) non contano. */
-    fun giornateConTimbratureInsufficienti(giornate: List<GiornataSap>, minimo: Int = 4): List<GiornataSap> =
+    /**
+     * Giornate lavorate con meno di due timbrature (entrata e uscita). La pausa pranzo non si timbra:
+     * è inclusa e a discrezione del dipendente. Le giornate senza timbrature (ferie, riposi) non contano.
+     */
+    fun giornateConTimbratureInsufficienti(giornate: List<GiornataSap>, minimo: Int = 2): List<GiornataSap> =
         giornate.filter { it.numeroTimbrature in 1 until minimo }
 
     /**

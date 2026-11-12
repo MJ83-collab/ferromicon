@@ -56,7 +56,7 @@ class StaffTest {
 
     @Test
     fun timbratureInsufficientiSegnalate() {
-        val g = listOf(giorno(1, "08:15", "16:21", null, 4), giorno(2, "08:15", "13:00", null, 2), giorno(3, null, null, null, 0))
+        val g = listOf(giorno(1, "08:15", "16:21", null, 2), giorno(2, "08:15", "13:00", null, 1), giorno(3, null, null, null, 0))
         assertEquals(listOf(2), OrarioStaff.giornateConTimbratureInsufficienti(g).map { it.giorno })
     }
 
