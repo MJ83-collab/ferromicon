@@ -389,7 +389,7 @@ class ServizioActivity : Activity() {
         val orario = OrarioAltarail.carica(this)
         if (orario == null) {
             AlertDialog.Builder(this)
-                .setMessage("Nessun orario importato. Dal menu principale scegli \"Orario Altarail (Regione " +
+                .setMessage("Nessun orario importato. Dal menu principale scegli \"Orario Azienda (Regione " +
                     "Lombardia)\" e importa lo zip GTFS dal portale Open Data.")
                 .setPositiveButton("OK", null).show()
             return

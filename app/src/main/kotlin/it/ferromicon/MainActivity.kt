@@ -197,7 +197,7 @@ class MainActivity : Activity() {
             Strumento("🏠", "Perimetri di residenza", "Ore fuori residenza", 15)
         ))
         gruppo("Orari e rubrica", listOf(
-            Strumento("🚆", "Orario Altarail", "Treni e fermate", 13),
+            Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
             Strumento("📒", "Rubrica stazioni", "Numeri utili", 12),
             Strumento("🗓️", "Esporta calendario", "File .ics: scegli cosa, anche su Drive", 9),
             Strumento("📥", "Importa calendario", "File .ics da Drive o telefono", 30),
@@ -1105,8 +1105,8 @@ class MainActivity : Activity() {
             if (orario.validoAl?.isBefore(LocalDate.now()) == true) append("\n⚠️ Scaduto: importa quello nuovo.")
         }
         AlertDialog.Builder(this)
-            .setTitle("Orario Altarail")
-            .setMessage("$stato\n\nL'orario ufficiale dei treni Altarail è pubblicato da Regione Lombardia sul " +
+            .setTitle("Orario Azienda")
+            .setMessage("$stato\n\nL'orario ufficiale dei treni dell'Azienda è pubblicato da Regione Lombardia sul " +
                 "portale Open Data in formato GTFS. Scarica lo zip dal portale, poi importalo: nelle righe " +
                 "del servizio potrai cercare un treno per numero e avere stazioni e orari del giorno.\n\n" +
                 "Fonte: ${OrarioAltarail.FONTE}.")

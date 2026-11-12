@@ -14,7 +14,7 @@ object OrarioAltarail {
     const val PAGINA_DATASET = "https://www.dati.lombardia.it/d/3z4k-mxz9"
     /** Scaricamento diretto dello zip GTFS. */
     const val DOWNLOAD_ZIP = "https://www.dati.lombardia.it/download/3z4k-mxz9/application%2Fzip"
-    const val FONTE = "Regione Lombardia – Open Data, orario Altarail in formato GTFS"
+    const val FONTE = "Regione Lombardia – Open Data, orario Azienda in formato GTFS"
 
     private const val FILE_INDICE = "orario-altarail.idx"
     @Volatile private var inMemoria: Orario? = null
