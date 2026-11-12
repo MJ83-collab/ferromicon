@@ -69,6 +69,7 @@ class MainActivity : Activity() {
             return
         }
         if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
+        if (savedInstanceState == null) CopiaSicurezza.alAvvio(this)
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
@@ -365,6 +366,7 @@ class MainActivity : Activity() {
         val uri = data?.data
         if (resultCode != RESULT_OK || uri == null) return
         when (requestCode) {
+            CopiaSicurezza.RICHIESTA_CARTELLA -> CopiaSicurezza.dopoSceltaCartella(this, uri)
             RICHIESTA_BACKUP -> try {
                 contentResolver.openOutputStream(uri)?.use {
                     it.write(Archivio.aTesto(Archivio.caricaTutto(this)).toByteArray())

@@ -144,6 +144,14 @@ class ImpostazioniActivity : Activity() {
         col.addView(TextView(this).apply { text = "Giorni prima della scadenza (1–30)"; textSize = 12f })
         col.addView(giorniRecupero)
 
+        col.addView(etichetta("Copia di sicurezza"))
+        col.addView(nota("Alla prima apertura di una nuova versione salva i dati in questa cartella. " +
+            "Dopo una reinstallazione propone il ripristino dalla copia."))
+        col.addView(Button(this).apply {
+            text = if (CopiaSicurezza.cartella(this@ImpostazioniActivity) == null) "Scegli cartella" else "Cambia cartella"
+            setOnClickListener { CopiaSicurezza.scegliCartella(this@ImpostazioniActivity) }
+        })
+
         // Aspetto: chiaro, scuro o come il telefono (la scelta manuale richiede Android 12 o successivo)
         col.addView(etichetta("Aspetto"))
         if (android.os.Build.VERSION.SDK_INT >= 31) {
@@ -254,6 +262,14 @@ class ImpostazioniActivity : Activity() {
     private fun oreAMinuti(testo: String, predefinito: Int): Int =
         testo.replace(',', '.').toDoubleOrNull()?.let { Math.round(it * 60).toInt() }?.takeIf { it in 60..24 * 60 }
             ?: predefinito
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data ?: return
+        if (resultCode == RESULT_OK && requestCode == CopiaSicurezza.RICHIESTA_CARTELLA) {
+            CopiaSicurezza.dopoSceltaCartella(this, uri)
+        }
+    }
 
     private fun etichetta(t: String) = TextView(this).apply {
         text = t; textSize = 16f; setPadding(0, dp(16), 0, 0)
