@@ -35,7 +35,7 @@ object Archivio {
     }
 
     /** True se l'archivio è stato messo da parte perché illeggibile e l'utente non è ancora stato avvisato. */
-    fun danneggiatoDaSegnalare(ctx: Context): Boolean =
+    fun danneggiatoDaSegnalato(ctx: Context): Boolean =
         ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).getBoolean(KEY_DANNEGGIATO, false)
 
     fun segnalazioneDanneggiatoVista(ctx: Context) {
