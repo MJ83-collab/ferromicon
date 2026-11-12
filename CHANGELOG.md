@@ -1,6 +1,21 @@
 # Novità
 
-Versione 0.0.6 (versionCode 6). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.9 (versionCode 9). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.9
+- Aggiornamenti: questa è la prima release pubblicata dopo la 0.0.6. Include anche le modifiche della 0.0.7 e della 0.0.8, che non erano state pubblicate su GitHub. Da ora il controllo aggiornamenti trova le versioni nuove.
+- Compilazione automatica: ogni push su `main` compila l'APK, esegue i test delle regole e pubblica la release con `ferromicon.apk` e `versione.json`.
+
+## 0.0.8
+- Solidità: dove il nome di un file non si legge, l'app non ignora più l'errore in silenzio; lo registra nel log.
+- Nessuna modifica visibile alle funzioni. Il resto dei punti del report di solidità è descritto in `report.md`.
+
+## 0.0.7
+- Il workflow si ferma se la versione esiste già su GitHub: un push senza aumento di versione non sostituisce più la release.
+- Correzione del changelog: la firma fissa parte dalla 0.0.7 (vedi sopra per la 0.0.6).
+- Strumenti → «Importa file»: un solo pulsante per zip dell'orario (.zip), calendario (.ics) e backup (.json). I PDF non si riconoscono dal nome: l'app chiede a quale sezione appartengono.
+- Calendario agente: la lettera estiva scelta per il 2026 scorre ogni anno nella sequenza D-A-C-E-F-B, e per ogni anno si calcolano il periodo estivo e quello invernale della stessa lettera. La Pasqua si calcola dalla data della festività. Le date fisse valgono finché l'avviso aziendale non cambia: vanno verificate ogni anno.
+- Margini in alto: il testo delle schermate (Strumenti, Riepilogo, Agenda, Diario, Cedolini) non finisce più sotto la barra di stato.
 
 ## 0.0.6
 - Strumenti → Aggiornamenti: la voce mostra la versione installata; se è uscita una versione più recente, la riga dice «DISPONIBILE» con il numero. «Controlla aggiornamenti» indica versione installata e ultima online.
@@ -20,7 +35,7 @@ Versione 0.0.6 (versionCode 6). Ogni voce è una funzione aggiunta; il modulo `a
 - Strumenti → Aggiornamenti: controllo immediato e interruttore del controllo automatico.
 - Ogni push su GitHub crea la release `v<versione>` con `ferromicon.apk` e `versione.json`: per pubblicare una novità basta alzare la versione e caricare.
 - La chiave di firma non è nella repo: la compilazione la prende dai segreti di GitHub.
-- Funziona con la repo pubblica; da questa versione in poi gli aggiornamenti si installano senza disinstallare.
+- Funziona con la repo pubblica; dalla 0.0.7 gli aggiornamenti si installano senza disinstallare.
 
 ## Cedolino e diario di bordo
 - Profilo dal cedolino: caricando un cedolino in PDF l'app legge profilo (macchinista o capotreno), livello, CID, data di assunzione, assegno ad personam e ferie residue, e imposta regole e parametri. Si può fare già alla prima apertura.
@@ -34,7 +49,7 @@ Versione 0.0.6 (versionCode 6). Ogni voce è una funzione aggiunta; il modulo `a
 - Sincronizzazione col calendario del telefono con la stessa scelta di contenuto.
 
 ## Installazione
-- Firma fissa dell'APK: gli aggiornamenti si installano sopra la versione precedente senza perdere i dati.
+- Firma fissa dell'APK: dalla 0.0.7 gli aggiornamenti si installano sopra la versione precedente. La 0.0.6 usa una chiave di firma nuova: chi ha la 0.0.5 deve disinstallare e perde i dati locali.
 
 ## Calendario agente, CID ed esportazione
 - Calendario da CID o cognome: legge il calendario degli agenti e i turni del personale mobile (PDF), ricostruisce il ciclo del turno e genera giornate con orari, condotta o scorta e treni, riposi, disponibilità e ferie.

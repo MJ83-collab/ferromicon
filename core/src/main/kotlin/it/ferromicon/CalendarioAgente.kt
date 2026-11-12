@@ -22,6 +22,68 @@ object PeriodiFerie {
         PeriodoFerie("Estivo $n", dal, al)
     }
 
+    /** Anno a cui si riferisce la lettera scelta dall'utente (avviso 37/2026: sequenza per il 2026). */
+    const val ANNO_BASE = 2026
+
+    /** Sequenza dei periodi estivi (avviso 37/2026); ogni anno la lettera scorre di un posto. */
+    val SEQUENZA_ESTIVA = listOf("D", "A", "C", "E", "F", "B")
+
+    /** Lettera estiva di un anno, partendo da quella di [annoBase]. Ipotesi: la sequenza prosegue ogni anno. */
+    fun letteraPerAnno(letteraBase: String, annoBase: Int, anno: Int): String {
+        val i = SEQUENZA_ESTIVA.indexOf(letteraBase)
+        require(i >= 0) { "Lettera sconosciuta: $letteraBase" }
+        val n = ((i + (anno - annoBase)) % 6 + 6) % 6
+        return SEQUENZA_ESTIVA[n]
+    }
+
+    /** Periodo estivo di un anno per la lettera base scelta dall'utente. */
+    fun estivoPerAnno(letteraBase: String, anno: Int): PeriodoFerie? {
+        val l = letteraPerAnno(letteraBase, ANNO_BASE, anno)
+        return estivi(anno).firstOrNull { it.nome == "Estivo $l" }
+    }
+
+    /**
+     * Periodi invernali della stagione che inizia nell'anno [stagione] (2026 = 2026/27).
+     * Stessa lettera del periodo estivo. Natale, Immacolata, Epifania, 25 aprile e Capodanno hanno date fisse;
+     * la Pasqua va da tre giorni prima a tre giorni dopo la domenica di Pasqua (2027: 25/03–31/03).
+     */
+    fun invernali(stagione: Int): List<PeriodoFerie> {
+        val pasqua = pasqua(stagione + 1)
+        return listOf(
+            PeriodoFerie("Invernale A (Natale)", LocalDate.of(stagione, 12, 21), LocalDate.of(stagione, 12, 27)),
+            PeriodoFerie("Invernale B (Pasqua)", pasqua.minusDays(3), pasqua.plusDays(3)),
+            PeriodoFerie("Invernale C (Epifania)", LocalDate.of(stagione + 1, 1, 4), LocalDate.of(stagione + 1, 1, 10)),
+            PeriodoFerie("Invernale D (25 aprile)", LocalDate.of(stagione + 1, 4, 25), LocalDate.of(stagione + 1, 5, 1)),
+            PeriodoFerie("Invernale E (Immacolata)", LocalDate.of(stagione, 12, 5), LocalDate.of(stagione, 12, 11)),
+            PeriodoFerie("Invernale F (Capodanno)", LocalDate.of(stagione, 12, 28), LocalDate.of(stagione + 1, 1, 3))
+        )
+    }
+
+    /** Periodo invernale della stessa lettera del periodo estivo ("Estivo D" 2026 → "Invernale D" 2026/27). */
+    fun invernalePer(estivo: PeriodoFerie): PeriodoFerie? {
+        val lettera = estivo.nome.substringAfter("Estivo ").trim()
+        return invernali(estivo.dal.year).firstOrNull { it.nome.startsWith("Invernale $lettera ") }
+    }
+
+    /** Periodo invernale della stagione [stagione] per la lettera base scelta dall'utente. */
+    fun invernalePerAnno(letteraBase: String, stagione: Int): PeriodoFerie? {
+        val l = letteraPerAnno(letteraBase, ANNO_BASE, stagione)
+        return invernali(stagione).firstOrNull { it.nome.startsWith("Invernale $l ") }
+    }
+
+    /** Pasqua cattolica (algoritmo di Meeus/Jones/Butcher). */
+    fun pasqua(anno: Int): LocalDate {
+        val a = anno % 19; val b = anno / 100; val c = anno % 100
+        val d = b / 4; val e = b % 4; val f = (b + 8) / 25; val g = (b - f + 1) / 3
+        val h = (19 * a + b - d - g + 15) % 30
+        val i = c / 4; val k = c % 4
+        val l = (32 + 2 * e + 2 * i - h - k) % 7
+        val m = (a + 11 * h + 22 * l) / 451
+        val mese = (h + l - 7 * m + 114) / 31
+        val giorno = ((h + l - 7 * m + 114) % 31) + 1
+        return LocalDate.of(anno, mese, giorno)
+    }
+
     private fun èRiposo(c: String?) = c == "GRS" || c == "R"
 
     /**

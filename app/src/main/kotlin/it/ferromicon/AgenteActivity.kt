@@ -109,7 +109,7 @@ class AgenteActivity : Activity() {
         contenuto.addView(testo("Date indicative: controllale ogni anno.", 12f))
         contenuto.addView(estivo)
 
-        contenuto.addView(etichetta("Periodo ferie invernale (facoltativo)"))
+        contenuto.addView(etichetta("Periodo ferie invernale (se scegli la lettera estiva si calcola da solo ogni anno)"))
         btnInvDal = Button(this).apply {
             setOnClickListener {
                 val b = invDal ?: LocalDate.now()
@@ -252,15 +252,23 @@ class AgenteActivity : Activity() {
         val lista = ArrayList<PeriodoFerie>()
         val sel = estivo.selectedItemPosition
         if (sel > 0) {
-            val lettera = PeriodiFerie.estivi(LocalDate.now().year).sortedBy { it.nome }[sel - 1].nome
+            // La lettera scelta vale per l'anno base (2026); negli anni successivi scorre nella sequenza.
+            val base = PeriodiFerie.estivi(PeriodiFerie.ANNO_BASE).sortedBy { it.nome }[sel - 1].nome
+                .substringAfter("Estivo ").trim()
             for (anno in da.year..fino.year) {
-                PeriodiFerie.estivi(anno).firstOrNull { it.nome == lettera }?.let {
+                PeriodiFerie.estivoPerAnno(base, anno)?.let {
                     if (!it.al.isBefore(da) && !it.dal.isAfter(fino)) lista += it
                 }
             }
+            for (stagione in (da.year - 1)..fino.year) {
+                PeriodiFerie.invernalePerAnno(base, stagione)?.let {
+                    if (!it.al.isBefore(da) && !it.dal.isAfter(fino)) lista += it
+                }
+            }
+        } else {
+            val a = invDal; val b = invAl
+            if (a != null && b != null && !b.isBefore(a)) lista += PeriodoFerie("Invernale", a, b)
         }
-        val a = invDal; val b = invAl
-        if (a != null && b != null && !b.isBefore(a)) lista += PeriodoFerie("Invernale", a, b)
         return lista
     }
 
