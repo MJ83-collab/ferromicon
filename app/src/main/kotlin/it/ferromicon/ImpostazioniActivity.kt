@@ -45,9 +45,15 @@ class ImpostazioniActivity : Activity() {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
             hint = "Nome e cognome"; setText(imp.nome)
         }
+        val impiantoScelto = Spinner(this).apply {
+            adapter = ArrayAdapter(this@ImpostazioniActivity,
+                android.R.layout.simple_spinner_dropdown_item, listOf("Non impostato") + Impianti.tutti)
+            setSelection(Impianti.tutti.indexOf(imp.impianto).let { if (it < 0) 0 else it + 1 })
+        }
         col.addView(etichetta("Il mio nome"))
         col.addView(nota("Dà il nome al tuo profilo: compare nell'agenda e nei calendari che esporti."))
         col.addView(nomeCampo)
+        col.addView(etichetta("Impianto di appartenenza")); col.addView(impiantoScelto)
         col.addView(android.widget.Button(this).apply {
             text = "Informazioni e responsabilità"
             setOnClickListener {
@@ -225,6 +231,7 @@ class ImpostazioniActivity : Activity() {
             setOnClickListener {
                 Archivio.salvaImpostazioni(this@ImpostazioniActivity, imp.copy(
                     profilo = Profilo.values()[profiloScelto.selectedItemPosition],
+                    impianto = if (impiantoScelto.selectedItemPosition == 0) "" else Impianti.tutti[impiantoScelto.selectedItemPosition - 1],
                     cid = cidCampo.text.toString().trim(),
                     nome = nomeCampo.text.toString().trim(),
                     dataAssunzione = assunzione,

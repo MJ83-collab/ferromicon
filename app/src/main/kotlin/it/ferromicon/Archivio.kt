@@ -426,6 +426,7 @@ object Archivio {
         put("addComunalePct", i.addComunalePct)
         put("profilo", i.profilo?.name ?: "")
         put("cid", i.cid)
+        put("impianto", i.impianto)
         put("nome", i.nome)
         put("festiviForzati", JSONArray().apply {
             i.festiviForzati.forEach { (data, valore) ->
@@ -461,6 +462,7 @@ object Archivio {
         addComunalePct = o.optDouble("addComunalePct", 0.8),
         profilo = runCatching { Profilo.valueOf(o.getString("profilo")) }.getOrNull(),
         cid = o.optString("cid", ""),
+        impianto = o.optString("impianto", ""),
         nome = o.optString("nome", ""),
         festiviForzati = o.optJSONArray("festiviForzati")?.let { a ->
             (0 until a.length()).associate {

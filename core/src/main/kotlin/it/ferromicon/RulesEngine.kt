@@ -14,8 +14,8 @@ import java.time.LocalTime
  */
 
 enum class Profilo(val etichetta: String) {
-    MACCHINISTA("Macchinista (PdM)"),
-    CAPOTRENO("Capo treno (PdB)"),
+    MACCHINISTA("Macchinista (PdC)"),
+    CAPOTRENO("Capotreno (PdA)"),
     /** Personale di staff (ufficio): orario fisso 08:15-16:21 e flessibilità mensile ±5 h. Regole in [OrarioStaff]. */
     UFFICIO("Personale di ufficio")
 }

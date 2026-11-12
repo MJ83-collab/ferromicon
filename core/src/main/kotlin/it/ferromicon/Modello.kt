@@ -233,6 +233,8 @@ data class Impostazioni(
     val profilo: Profilo? = null,
     /** CID (matricola) dell'utente: serve a trovare il suo calendario nei PDF dell'impianto. */
     val cid: String = "",
+    /** Impianto di appartenenza, scelto da [Impianti.tutti]; vuoto = non impostato. */
+    val impianto: String = "",
     /** Nome dell'utente: dà il nome al suo profilo (agenda, calendari, esportazioni). */
     val nome: String = "",
     /** Giorni di congedo parentale spettanti nell'anno (0 = non impostato). */
