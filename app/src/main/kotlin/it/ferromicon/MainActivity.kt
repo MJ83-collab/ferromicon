@@ -210,7 +210,8 @@ class MainActivity : Activity() {
             Strumento("💾", "Backup su file", "Salva una copia", 2),
             Strumento("♻️", "Ripristina da file", "Riporta una copia", 3),
             Strumento("🕒", "Backup automatici", "Una copia al giorno", 10),
-            Strumento("🗑️", "Cestino", "Voci eliminate di recente", 11)
+            Strumento("🗑️", "Cestino", "Voci eliminate di recente", 11),
+            Strumento("📑", "Report e dati", "PDF mensile o annuale, CSV da importare ed esportare", 42)
         ))
     }
 
@@ -254,6 +255,7 @@ class MainActivity : Activity() {
         when (id) {
             40 -> startActivity(Intent(this, WikiActivity::class.java))
             41 -> startActivity(Intent(this, CartellinoSapActivity::class.java))
+            42 -> startActivity(Intent(this, EsportaActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/json"

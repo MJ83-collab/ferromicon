@@ -1,6 +1,12 @@
 # Novità
 
-Versione 0.0.14 (versionCode 14). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.15 (versionCode 15). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.15
+- Report PDF: in Strumenti, «Report e dati». PDF di un mese o di un anno (si sceglie il mese o l'anno dal calendario), con agenda, assenze, cartellino SAP (flessibilità), cedolini (netto) e archivio (stazioni, perimetri, preferiti, CU). Il dettaglio giorno per giorno è facoltativo.
+- Esportazione dei dati in CSV: uno zip con un file per tipo di dato (servizi, assenze, impostazioni, preferiti, stazioni, perimetri, cedolini, CU, cartellini SAP, turno). Ogni riga ha colonne leggibili e il dettaglio completo, si apre con Excel.
+- Importazione dello zip CSV: aggiunge o sostituisce le voci con lo stesso identificativo.
+- Cartellino SAP: riconosce «Dal … al …» e la voce «Flessibilià».
 
 ## 0.0.14
 - Aggiornamenti: l'APK viene scaricato in una cartella visibile dal gestore file e poi si apre l'installazione di Android. Prima l'app usava la sessione dell'installatore, che con l'app aperta falliva con «deve essere chiuso durante l'aggiornamento».
