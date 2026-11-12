@@ -1,6 +1,10 @@
 # Novità
 
-Versione 0.0.9 (versionCode 9). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.10 (versionCode 10). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.10
+- Aggiornamenti: ogni esito dell'installazione viene mostrato (conferma, successo, errore con codice). Se la conferma di Android non si apre, l'app lo dice.
+- Aggiornamenti: il messaggio di errore del download indica il tipo di errore.
 
 ## 0.0.9
 - Aggiornamenti: questa è la prima release pubblicata dopo la 0.0.6. Include anche le modifiche della 0.0.7 e della 0.0.8, che non erano state pubblicate su GitHub. Da ora il controllo aggiornamenti trova le versioni nuove.

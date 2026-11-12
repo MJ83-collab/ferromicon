@@ -143,7 +143,7 @@ object Aggiornamenti {
             } catch (e: FileNotFoundException) {
                 errore = "Non trovo l'APK online (la repo deve essere pubblica)."
             } catch (e: Exception) {
-                errore = "Aggiornamento non riuscito: ${e.message ?: e.javaClass.simpleName}"
+                errore = "Aggiornamento non riuscito: ${e.javaClass.simpleName} ${e.message ?: ""}".trim()
             }
             Handler(Looper.getMainLooper()).post { fine(errore) }
         }.start()
@@ -199,18 +199,26 @@ object Aggiornamenti {
 /** Riceve dal sistema l'esito dell'installazione e mostra la richiesta di conferma. */
 class InstallazioneReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
-        when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
+        val stato = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
+        when (stato) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                 @Suppress("DEPRECATION")
                 val conferma = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
-                if (conferma != null) {
+                if (conferma == null) {
+                    Toast.makeText(ctx, "Installazione in attesa: il sistema non ha inviato la conferma.", Toast.LENGTH_LONG).show()
+                    return
+                }
+                try {
                     conferma.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     ctx.startActivity(conferma)
+                } catch (e: Exception) {
+                    Toast.makeText(ctx, "Conferma non aperta: ${e.javaClass.simpleName} ${e.message ?: ""}".trim(), Toast.LENGTH_LONG).show()
                 }
             }
-            PackageInstaller.STATUS_SUCCESS -> { }
+            PackageInstaller.STATUS_SUCCESS ->
+                Toast.makeText(ctx, "Aggiornamento installato.", Toast.LENGTH_LONG).show()
             else -> Toast.makeText(ctx,
-                "Installazione non riuscita: ${intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: "errore"}",
+                "Installazione non riuscita (codice $stato): ${intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: "errore"}",
                 Toast.LENGTH_LONG).show()
         }
     }
