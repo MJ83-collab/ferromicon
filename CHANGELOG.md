@@ -1,6 +1,10 @@
 # Novità
 
-Versione 0.0.16 (versionCode 16). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.17 (versionCode 17). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.17
+- Dopo un aggiornamento, il calendario del telefono viene risincronizzato da solo con i dati salvati (sul calendario già scelto in «Calendario del telefono»).
+- Nessun livello predefinito: il livello parte come «Non impostato» e va scelto in Impostazioni (o letto dal cedolino). Senza livello la paga oraria è segnalata come incompleta.
 
 ## 0.0.16
 - Privacy: dal repository pubblico sono stati tolti i dati personali rimasti nei test (nome, identificativo e indirizzo di una scheda SAP, area di lavoro). Nessuna modifica al comportamento dell'app.

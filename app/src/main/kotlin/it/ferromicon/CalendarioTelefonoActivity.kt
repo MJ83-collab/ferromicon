@@ -48,6 +48,29 @@ object CalendarioTelefono {
     fun rimuovi(ctx: Context): Int = ctx.contentResolver.delete(
         CalendarContract.Events.CONTENT_URI, "${CalendarContract.Events.CUSTOM_APP_PACKAGE} = ?", arrayOf(ctx.packageName))
 
+    private const val PREFS = "calendario"
+
+    /**
+     * Dopo un aggiornamento dell'app rifa la sincronizzazione con il calendario già scelto,
+     * così gli eventi tornano allineati ai dati salvati. Gira in background e non tocca i dati.
+     */
+    fun riallineaDopoAggiornamento(ctx: Context) {
+        val app = ctx.applicationContext
+        val p = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val versione = runCatching { app.packageManager.getPackageInfo(app.packageName, 0).longVersionCode }
+            .getOrDefault(0L)
+        if (p.getLong("versioneVista", -1L) == versione) return
+        val calendario = p.getLong("calendarioId", -1L)
+        if (calendario < 0 || !permessi(app)) {
+            p.edit().putLong("versioneVista", versione).apply()
+            return
+        }
+        Thread {
+            val ok = runCatching { sincronizza(app, calendario, Archivio.caricaTutto(app), OpzioniCalendario()) }.isSuccess
+            if (ok) p.edit().putLong("versioneVista", versione).apply()
+        }.start()
+    }
+
     /** Sostituisce gli eventi di Ferromicon con servizi e assenze dell'agenda da [da] in poi. */
     fun sincronizza(ctx: Context, calendario: Long, completi: Dati, opzioni: OpzioniCalendario): Int {
         rimuovi(ctx)
@@ -160,6 +183,9 @@ class CalendarioTelefonoActivity : Activity() {
         ScegliContenuto.mostra(this, "Cosa sincronizzare", "Sincronizza") { opzioni ->
             val dati = Archivio.caricaTutto(this)
             val n = runCatching { CalendarioTelefono.sincronizza(this, voce.id, dati, opzioni) }
+            n.onSuccess {
+                getSharedPreferences("calendario", MODE_PRIVATE).edit().putLong("calendarioId", voce.id).apply()
+            }
             Toast.makeText(this, n.fold({ "$it eventi scritti in ${voce.nome}" }, { "Sincronizzazione non riuscita: ${it.message}" }),
                 Toast.LENGTH_LONG).show()
         }

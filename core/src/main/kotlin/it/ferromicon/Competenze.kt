@@ -101,9 +101,11 @@ object Competenze {
 
     /** Retribuzione oraria per l'indennità festiva (art. 76.4 e 68.6). */
     fun pagaOraria(imp: Impostazioni, profilo: Profilo, data: LocalDate): Double {
-        val mensile = minimo(imp.livello, data) +
-            numeroScatti(imp.dataAssunzione, data) * SCATTI.getValue(imp.livello) +
-            imp.adPersonam + salarioProfessionale(profilo)
+        // Senza livello non si puo' stimare la paga base: restano ad personam e salario professionale.
+        val livello = imp.livello
+        val base = if (livello == null) 0.0 else
+            minimo(livello, data) + numeroScatti(imp.dataAssunzione, data) * SCATTI.getValue(livello)
+        val mensile = base + imp.adPersonam + salarioProfessionale(profilo)
         return mensile / 160.0
     }
 
@@ -348,7 +350,8 @@ object Competenze {
         if (minutiStra > 0 || minutiFestivi > 0) {
             if (imp.dataAssunzione == null)
                 note += "Senza data di assunzione la paga oraria non include gli scatti di anzianità."
-            note += "Paga oraria calcolata sul livello ${imp.livello.name}: controllalo nelle impostazioni."
+            note += if (imp.livello == null) "Imposta il livello nelle impostazioni: senza livello la paga oraria e' incompleta."
+                else "Paga oraria calcolata sul livello ${imp.livello.name}: controllalo nelle impostazioni."
         }
         if (conRfr.isNotEmpty() && fuori.isEmpty())
             note += "Per stimare l'assenza dalla residenza inserisci nei servizi le ore fuori residenza."

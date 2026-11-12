@@ -399,7 +399,7 @@ object Archivio {
 
     internal fun impostazioniAJson(i: Impostazioni) = JSONObject().apply {
         put("dataAssunzione", i.dataAssunzione?.toString() ?: "")
-        put("livello", i.livello.name)
+        i.livello?.let { put("livello", it.name) }
         put("adPersonam", i.adPersonam)
         put("orarioSuSeiGiorni", i.orarioSuSeiGiorni)
         put("ferieResidueAnnoPrecedente", i.ferieResidueAnnoPrecedente)
@@ -425,7 +425,7 @@ object Archivio {
 
     internal fun impostazioniDa(o: JSONObject) = Impostazioni(
         dataAssunzione = o.optString("dataAssunzione", "").takeIf { it.isNotBlank() }?.let { LocalDate.parse(it) },
-        livello = runCatching { Livello.valueOf(o.getString("livello")) }.getOrDefault(Livello.B3),
+        livello = runCatching { Livello.valueOf(o.getString("livello")) }.getOrNull(),
         adPersonam = o.optDouble("adPersonam", 0.0),
         orarioSuSeiGiorni = o.optBoolean("orarioSuSeiGiorni", false),
         ferieResidueAnnoPrecedente = o.optInt("ferieResidueAnnoPrecedente", 0),

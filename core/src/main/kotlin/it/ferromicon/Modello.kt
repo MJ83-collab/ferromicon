@@ -175,7 +175,8 @@ enum class Livello { Q1, Q2, A, B1, B2, B3, C1, C2, D1, D2, D3, E1, E2, E3, F1, 
 /** Impostazioni personali usate per ferie e competenze. */
 data class Impostazioni(
     val dataAssunzione: LocalDate? = null,
-    val livello: Livello = Livello.B3,
+    /** Nessun livello finche' non lo scegli o non lo leggi dal cedolino. */
+    val livello: Livello? = null,
     /** Assegno ad personam pensionabile mensile, in euro (art. 68.4). */
     val adPersonam: Double = 0.0,
     /** Orario settimanale su 6 giorni invece che su 5 (art. 30.1). */

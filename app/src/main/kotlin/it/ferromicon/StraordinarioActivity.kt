@@ -77,6 +77,10 @@ class StraordinarioActivity : Activity() {
         val oggi = LocalDate.now()
         val t = tipi[tipo.selectedItemPosition.coerceAtLeast(0)]
         val h = ore.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
+        if (imp.livello == null) {
+            risultato.text = "Per calcolare la paga oraria imposta il livello in Impostazioni."
+            return
+        }
         val oraria = Competenze.pagaOraria(imp, profilo, oggi)
         val lordoOra = oraria * (1 + t.magg)
         if (imp.redditoAnnuo <= 0) {

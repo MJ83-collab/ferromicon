@@ -59,6 +59,7 @@ class MainActivity : Activity() {
         }
 
         runCatching { AvvisoPermessi.controllaMensile(this) }
+        runCatching { CalendarioTelefono.riallineaDopoAggiornamento(this) }
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         radice.setOnApplyWindowInsetsListener { v, insets ->
             v.setPadding(0, insetAlto(insets), 0, insetBasso(insets))

@@ -74,8 +74,8 @@ class ImpostazioniActivity : Activity() {
 
         val livello = Spinner(this).apply {
             adapter = ArrayAdapter(this@ImpostazioniActivity,
-                android.R.layout.simple_spinner_dropdown_item, Livello.values().map { it.name })
-            setSelection(imp.livello.ordinal)
+                android.R.layout.simple_spinner_dropdown_item, listOf("Non impostato") + Livello.values().map { it.name })
+            setSelection((imp.livello?.ordinal ?: -1) + 1)
         }
         col.addView(etichetta("Livello / posizione retributiva"))
         col.addView(nota("Lo trovi in busta paga. Serve solo per stimare l'indennità festiva."))
@@ -197,7 +197,7 @@ class ImpostazioniActivity : Activity() {
                     cid = cidCampo.text.toString().trim(),
                     nome = nomeCampo.text.toString().trim(),
                     dataAssunzione = assunzione,
-                    livello = Livello.values()[livello.selectedItemPosition],
+                    livello = livello.selectedItemPosition.let { if (it == 0) null else Livello.values()[it - 1] },
                     adPersonam = adPersonam.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0,
                     orarioSuSeiGiorni = seiGiorni.isChecked,
                     ferieResidueAnnoPrecedente = ferieResidue.text.toString().toIntOrNull() ?: 0,
