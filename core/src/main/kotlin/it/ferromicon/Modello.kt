@@ -209,6 +209,10 @@ data class Impostazioni(
     val parentaliSpettanti: Int = 0,
     /** Giorni di permesso (ex festività e altri permessi) spettanti nell'anno; 0 = non impostato. */
     val permessiSpettanti: Int = 0,
+    /** Linee su cui il macchinista è abilitato (codici o nomi scelti dall'utente). */
+    val abilitazioniLinee: List<String> = emptyList(),
+    /** Tipi di treno (materiale rotabile) che il macchinista è abilitato a guidare. */
+    val abilitazioniMacchine: List<String> = emptyList(),
 ) {
     /** Profilo da usare per i nuovi servizi. */
     val profiloAttivo: Profilo get() = profilo ?: Profilo.MACCHINISTA

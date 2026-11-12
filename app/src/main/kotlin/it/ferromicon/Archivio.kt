@@ -406,6 +406,8 @@ object Archivio {
         put("permessiAggiuntivi", i.permessiAggiuntivi)
         put("parentaliSpettanti", i.parentaliSpettanti)
         put("permessiSpettanti", i.permessiSpettanti)
+        put("abilitazioniLinee", JSONArray(i.abilitazioniLinee))
+        put("abilitazioniMacchine", JSONArray(i.abilitazioniMacchine))
         put("promemoriaMinuti", i.promemoriaMinuti)
         put("letteraGruppoFerie", i.letteraGruppoFerie?.toString() ?: "")
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
@@ -433,6 +435,8 @@ object Archivio {
         permessiAggiuntivi = o.optInt("permessiAggiuntivi", 0),
         parentaliSpettanti = o.optInt("parentaliSpettanti", 0),
         permessiSpettanti = o.optInt("permessiSpettanti", 0),
+        abilitazioniLinee = o.optJSONArray("abilitazioniLinee")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
+        abilitazioniMacchine = o.optJSONArray("abilitazioniMacchine")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
         letteraGruppoFerie = o.optString("letteraGruppoFerie", "").firstOrNull()?.uppercaseChar(),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {

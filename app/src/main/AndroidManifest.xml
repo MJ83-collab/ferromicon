@@ -112,6 +112,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".AbilitazioniActivity"
+            android:exported="false"
+            android:label="Abilitazioni"
+            android:parentActivityName=".MainActivity" />
+        <activity
             android:name=".ImpostazioniActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

@@ -229,6 +229,7 @@ class MainActivity : Activity() {
             Strumento("🧮", "Cartellino SAP", "Importa il PDF: timbrature e flessibilità", 41)
         ))
         gruppo("Orari e rubrica", listOf(
+            Strumento("🎫", "Abilitazioni", "Linee e tipi di treno per cui sei abilitato", 43),
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
             Strumento("📒", "Rubrica stazioni", "Numeri utili", 12),
             Strumento("🗓️", "Esporta calendario", "File .ics: scegli cosa, anche su Drive", 9),
@@ -283,6 +284,7 @@ class MainActivity : Activity() {
     private fun esegui(id: Int) {
         when (id) {
             40 -> startActivity(Intent(this, WikiActivity::class.java))
+            43 -> startActivity(Intent(this, AbilitazioniActivity::class.java))
             41 -> startActivity(Intent(this, CartellinoSapActivity::class.java))
             42 -> startActivity(Intent(this, EsportaActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
