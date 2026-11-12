@@ -245,7 +245,12 @@ class MainActivity : Activity() {
         ))
     }
 
-    private fun gruppo(nome: String, voci: List<Strumento>) {
+    /** Voci legate a turni e riposi: il personale di ufficio non le usa. */
+    private val vociSoloTurno = setOf(7, 8, 19, 21)
+
+    private fun gruppo(nome: String, vociTutte: List<Strumento>) {
+        val ufficio = Archivio.caricaTutto(this).impostazioni.profiloAttivo == Profilo.UFFICIO
+        val voci = vociTutte.filterNot { ufficio && it.id in vociSoloTurno }
         intestazione(nome)
         voci.chunked(2).forEach { coppia ->
             val riga = LinearLayout(this)
