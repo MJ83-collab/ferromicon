@@ -108,6 +108,24 @@ object Archivio {
     /** Sposta l'assenza nel cestino. */
     fun eliminaAssenza(ctx: Context, id: Long) = modifica(ctx) { it.eliminaAssenza(id, LocalDateTime.now()) }
 
+    /**
+     * Sposta un riposo da [da] a [a] (es. quando quel giorno si lavora in straordinario).
+     * Riuscito solo se [da] ha un riposo e [a] è libero: nessun servizio e nessuna assenza.
+     * Ritorna true se lo spostamento è avvenuto.
+     */
+    fun spostaRiposo(ctx: Context, da: LocalDate, a: LocalDate): Boolean {
+        val d = caricaTutto(ctx)
+        val riposo = d.assenze.firstOrNull { it.data == da && it.tipo.riposo } ?: return false
+        val occupato = d.assenze.any { it.data == a } ||
+            d.servizi.any { it.turno.inizio.toLocalDate() == a || it.turno.fine.toLocalDate() == a }
+        if (occupato) return false
+        salvaTutto(ctx, d.copy(
+            assenze = d.assenze.filterNot { it.data == da } +
+                Assenza(System.currentTimeMillis(), a, riposo.tipo, "spostato dal $da")
+        ))
+        return true
+    }
+
     fun ripristina(ctx: Context, voce: VoceCestino) = modifica(ctx) { it.ripristina(voce) }
 
     fun svuotaCestino(ctx: Context) = modifica(ctx) { it.copy(cestino = emptyList()) }
