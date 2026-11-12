@@ -1,6 +1,9 @@
 # Novità
 
-Versione 0.0.15 (versionCode 15). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.16 (versionCode 16). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.16
+- Privacy: dal repository pubblico sono stati tolti i dati personali rimasti nei test (nome, identificativo e indirizzo di una scheda SAP, area di lavoro). Nessuna modifica al comportamento dell'app.
 
 ## 0.0.15
 - Report PDF: in Strumenti, «Report e dati». PDF di un mese o di un anno (si sceglie il mese o l'anno dal calendario), con agenda, assenze, cartellino SAP (flessibilità), cedolini (netto) e archivio (stazioni, perimetri, preferiti, CU). Il dettaglio giorno per giorno è facoltativo.
