@@ -58,6 +58,10 @@ object CopiaSicurezza {
     /** Scrive la copia di oggi nella cartella, sovrascrivendo quella di oggi se esiste. */
     fun scrivi(ctx: Context) {
         val tree = cartella(ctx) ?: return
+        // Non sovrascrivere la copia buona con un archivio vuoto o illeggibile.
+        if (Archivio.danneggiatoDaSegnalato(ctx)) return
+        val dati = Archivio.caricaTutto(ctx)
+        if (dati.servizi.isEmpty() && dati.assenze.isEmpty()) return
         runCatching {
             val nome = "$PREFISSO${LocalDate.now()}.json"
             val esistente = copie(ctx, tree).firstOrNull { it.first == nome }?.second
@@ -86,7 +90,35 @@ object CopiaSicurezza {
         proponiRipristino(act)
     }
 
+    /** Avviso se l'archivio era illeggibile: propone il ripristino dall'ultima copia automatica. */
+    fun avvisaDanneggiato(act: Activity) {
+        if (!Archivio.danneggiatoDaSegnalato(act)) return
+        Archivio.segnalazioneDanneggiatoVista(act)
+        val ultima = Archivio.backupDisponibili(act).firstOrNull()
+        if (ultima == null) {
+            AlertDialog.Builder(act).setTitle("Dati non leggibili")
+                .setMessage("Il file dei dati non si è letto. È stato messo da parte, ma non ci sono copie automatiche da ripristinare.")
+                .setPositiveButton("OK", null).show()
+            return
+        }
+        val data = ultima.name.removePrefix("servizi-").removeSuffix(".json")
+        AlertDialog.Builder(act).setTitle("Dati non leggibili")
+            .setMessage("Il file dei dati non si è letto ed è stato messo da parte. Ripristinare l'ultima copia automatica del $data?")
+            .setPositiveButton("Ripristina") { _, _ ->
+                runCatching { Archivio.salvaTutto(act, Archivio.leggiBackup(ultima)) }
+                    .onSuccess {
+                        Toast.makeText(act, "Dati ripristinati", Toast.LENGTH_SHORT).show()
+                        act.recreate()
+                    }
+                    .onFailure { Toast.makeText(act, "Ripristino non riuscito: ${it.message}", Toast.LENGTH_LONG).show() }
+            }
+            .setNegativeButton("Non ora", null)
+            .show()
+    }
+
     private fun proponiRipristino(act: Activity) {
+        // Con un archivio illeggibile l'avviso dedicato ha la precedenza.
+        if (Archivio.danneggiatoDaSegnalato(act)) return
         val tree = cartella(act)
         if (tree == null) {
             AlertDialog.Builder(act)

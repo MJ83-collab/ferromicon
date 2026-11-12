@@ -16,6 +16,8 @@ object Archivio {
 
     private const val NOME_FILE = "servizi.json"
     private const val VERSIONE_FORMATO = 6
+    private const val STATO = "stato_archivio"
+    private const val KEY_DANNEGGIATO = "danneggiato"
 
     // ---------- lettura e scrittura ----------
 
@@ -25,10 +27,19 @@ object Archivio {
         return try {
             daTesto(file.readText())
         } catch (e: Exception) {
-            // File danneggiato: lo conserviamo a parte invece di perderlo.
+            // File danneggiato: lo mettiamo da parte e lo segnaliamo, invece di perderlo in silenzio.
             file.renameTo(File(ctx.filesDir, "$NOME_FILE.danneggiato"))
+            ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).edit().putBoolean(KEY_DANNEGGIATO, true).apply()
             Dati(emptyList(), emptyList())
         }
+    }
+
+    /** True se l'archivio è stato messo da parte perché illeggibile e l'utente non è ancora stato avvisato. */
+    fun danneggiatoDaSegnalare(ctx: Context): Boolean =
+        ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).getBoolean(KEY_DANNEGGIATO, false)
+
+    fun segnalazioneDanneggiatoVista(ctx: Context) {
+        ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).edit().putBoolean(KEY_DANNEGGIATO, false).apply()
     }
 
     fun carica(ctx: Context): List<Servizio> = caricaTutto(ctx).servizi

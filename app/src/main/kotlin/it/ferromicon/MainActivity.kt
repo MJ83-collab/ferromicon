@@ -70,6 +70,7 @@ class MainActivity : Activity() {
         }
         if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
         if (savedInstanceState == null) CopiaSicurezza.alAvvio(this)
+        if (savedInstanceState == null) CopiaSicurezza.avvisaDanneggiato(this)
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
