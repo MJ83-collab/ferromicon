@@ -32,7 +32,7 @@ class DiarioTest {
         p += Pezzo("Agente:", 78.0, 36.9, 26.0); p += Pezzo("Rossi", 106.0, 36.9, 20.0); p += Pezzo("Mario", 135.0, 36.9, 20.0)
         p += Pezzo("Lavoro", 489.8, 60.5, 5.5); p += Pezzo("notturno", 489.8, 36.9, 5.5)
         p += Pezzo("Settore:", 10.0, 46.9, 24.0); p += Pezzo("Scorta", 36.5, 46.9, 20.0)
-        p += Pezzo("Residenza:", 62.5, 46.9, 35.0); p += Pezzo("VARESE_UN", 99.5, 46.9, 42.0)
+        p += Pezzo("Residenza:", 62.5, 46.9, 35.0); p += Pezzo("CITTA_UN", 99.5, 46.9, 42.0)
         p += Pezzo("Periodo:", 10.0, 56.9, 26.0); p += Pezzo("gennaio", 38.0, 56.9, 25.0); p += Pezzo("2026", 64.9, 56.9, 15.0)
         p += Pezzo("Orario Prescritto", 152.0, 74.0, 40.0); p += Pezzo("Orario Reale", 213.0, 74.0, 30.0)
         p += Pezzo("Presenza/Attivita'", 72.9, 87.2, 46.0)
@@ -41,7 +41,7 @@ class DiarioTest {
         r(riga(y, "05/01/2026", "RS", "Riposo Settimana"))
         // servizio a cavallo della mezzanotte: la coda ha la data del giorno dopo
         r(riga(y, "07/01/2026", "VA031", "Inizio", pp = "22:00", pa = "22:05", rp = "22:00", ra = "22:05",
-            da = "VARESE", a = "VARESE", tot = listOf("120", "400", "100", "", "380")))
+            da = "CITTA", a = "CITTA", tot = listOf("120", "400", "100", "", "380")))
         r(riga(y, "07/01/2026", "VA031", "REFEZ", pp = "22:05", pa = "22:35", rp = "22:05", ra = "22:35"))
         r(riga(y, "07/01/2026", "VA031", "Inlinea", treno = "24581", pp = "23:40", pa = "00:18", rp = "23:41", ra = "00:20"))
         r(riga(y, "08/01/2026", "VA031", "Fine", pp = "00:18", pa = "00:40", rp = "00:20", ra = "00:42"))
@@ -59,7 +59,7 @@ class DiarioTest {
         val d = DiarioBordo.leggi(pagina())!!
         assertEquals("1234567", d.matricola)
         assertEquals("Rossi Mario", d.agente)
-        assertEquals("VARESE_UN", d.residenza)
+        assertEquals("CITTA_UN", d.residenza)
         assertEquals(java.time.YearMonth.of(2026, 1), d.mese)
         assertEquals(Profilo.CAPOTRENO, d.profilo)
         assertEquals(4, d.giorni.size)       // la coda dell'8 gennaio è parte del servizio del 7
@@ -128,7 +128,7 @@ class DiarioTest {
             "Data Nascita : 01.01.1980 Pos.INPS : 0000000000",
             "Data Assunz. : 17.11.2003 Pos.INAIL : 0000000000 CID: 01234567 C.F.XXXXXXXXXXXXXXXX",
             "Livello : B1 Tecnici Specializzati",
-            "Profilo : CAPO TRENO/CAPO SERVIZI TRENO AREA: L890 ST. di VARESE",
+            "Profilo : CAPO TRENO/CAPO SERVIZI TRENO AREA: L000 ST. di CITTA",
             "Numero A.P.A : 7 Data pross A.P.A: CDC : 9TL64003COSTI DIRETTI SCORTA"
         )
         val a = AnagraficaCedolino.leggi(testi, mapOf("res.ferie ap" to 7.0, "res.ferie ac" to 15.0),
@@ -137,14 +137,14 @@ class DiarioTest {
         assertEquals(LocalDate.of(2003, 11, 17), a.dataAssunzione)
         assertEquals(Livello.B1, a.livello)
         assertEquals(Profilo.CAPOTRENO, a.profilo)
-        assertEquals("VARESE", a.residenza)
+        assertEquals("CITTA", a.residenza)
         assertEquals(7, a.apa)
         val imp = a.applica(Impostazioni())
         assertEquals(Profilo.CAPOTRENO, imp.profilo)
         assertEquals(Livello.B1, imp.livello)
         assertEquals(91.74, imp.adPersonam, 0.001)
         assertEquals(7, imp.ferieResidueAnnoPrecedente)
-        assertEquals(Profilo.MACCHINISTA, AnagraficaCedolino.leggi(listOf("Profilo : MACCHINISTA AREA: L890 ST. di VARESE"),
+        assertEquals(Profilo.MACCHINISTA, AnagraficaCedolino.leggi(listOf("Profilo : MACCHINISTA AREA: L000 ST. di CITTA"),
             emptyMap(), emptyMap()).profilo)
     }
 }
