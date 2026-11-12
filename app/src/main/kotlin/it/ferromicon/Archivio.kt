@@ -274,6 +274,7 @@ object Archivio {
                 put("partenzaReale", r.partenzaReale?.toString() ?: "")
                 put("arrivoReale", r.arrivoReale?.toString() ?: "")
                 put("collegamento", r.collegamento)
+                put("vettura", r.vettura)
             })
         }
     }
@@ -286,7 +287,8 @@ object Archivio {
             tipo = runCatching { TipoRiga.valueOf(it.getString("tipo")) }.getOrDefault(TipoRiga.ALTRO),
             partenzaReale = data(it, "partenzaReale"),
             arrivoReale = data(it, "arrivoReale"),
-            collegamento = it.optString("collegamento", "")
+            collegamento = it.optString("collegamento", ""),
+            vettura = it.optBoolean("vettura", false)
         )
     }
 

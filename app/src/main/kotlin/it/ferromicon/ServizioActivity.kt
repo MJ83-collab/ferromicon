@@ -295,6 +295,7 @@ class ServizioActivity : Activity() {
                     append("  ${fmtOra.format(r.partenza)}–${fmtOra.format(r.arrivo)}")
                     if (tratta.isNotEmpty()) append("\n    $tratta")
                     if (r.collegamento.isNotEmpty()) append("  [${r.collegamento}]")
+                    if (r.vettura) append("  [V]")
                     if (ritardo != null) append(when {
                         ritardo > 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} (+$ritardo')"
                         ritardo < 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} ($ritardo')"
@@ -313,9 +314,16 @@ class ServizioActivity : Activity() {
                     true
                 }
             })
-            if (i > 0) elencoRighe.addView(Button(this).apply {
-                text = "Collega alla precedente: " + etichettaCollegamento(r.collegamento)
-                setOnClickListener { scegliCollegamento(i) }
+            elencoRighe.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                addView(Button(this@ServizioActivity).apply {
+                    text = if (r.vettura) "V · vettura" else "T · treno"
+                    setOnClickListener { righe[i] = righe[i].copy(vettura = !r.vettura); mostraRighe() }
+                })
+                if (i > 0) addView(Button(this@ServizioActivity).apply {
+                    text = "Collega alla precedente: " + etichettaCollegamento(r.collegamento)
+                    setOnClickListener { scegliCollegamento(i) }
+                })
             })
         }
         aggiornaCondottaDaRighe()
@@ -433,7 +441,8 @@ class ServizioActivity : Activity() {
                     tipo = TipoRiga.values()[tipo.selectedItemPosition],
                     partenzaReale = reale(partenzaReale, p),
                     arrivoReale = reale(arrivoReale, arr),
-                    collegamento = esistente?.collegamento ?: ""
+                    collegamento = esistente?.collegamento ?: "",
+                    vettura = esistente?.vettura ?: false
                 )
                 if (indice == null) righe += nuova else righe[indice] = nuova
                 mostraRighe()

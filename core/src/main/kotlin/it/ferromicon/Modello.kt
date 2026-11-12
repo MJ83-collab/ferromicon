@@ -82,6 +82,8 @@ data class RigaTreno(
     val arrivoReale: LocalDateTime? = null,
     /** Collegamento con la riga precedente: "" nessuno, "O" orario, "S" stazione, "OS" entrambi. */
     val collegamento: String = "",
+    /** true se la riga è una vettura (movimento non commerciale), false se è un treno. */
+    val vettura: Boolean = false,
 ) {
     val inizioEffettivo: LocalDateTime get() = partenzaReale ?: partenza
     val fineEffettiva: LocalDateTime get() = arrivoReale ?: arrivo
