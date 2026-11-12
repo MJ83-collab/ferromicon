@@ -186,7 +186,8 @@ object Competenze {
         val notturno = RegoleAltarail.èNotturno(t)
         return when (t.profilo) {
             Profilo.MACCHINISTA -> if (notturno) 7 * 60 else 8 * 60 + 30
-            Profilo.CAPOTRENO, Profilo.UFFICIO -> if (notturno) 8 * 60 else 10 * 60
+            Profilo.CAPOTRENO -> if (notturno) 8 * 60 else 10 * 60
+            Profilo.UFFICIO -> OrarioStaff.PRESTAZIONE_MINUTI
         }
     }
 
