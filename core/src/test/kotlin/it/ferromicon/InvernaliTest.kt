@@ -37,11 +37,9 @@ class InvernaliTest {
     }
 
     @Test fun invernoSuccessivoConPasquaNuova() {
-        val pasqua2028 = PeriodiFerie.invernalePerAnno("D", 2027)
-        assertEquals("Invernale A (Natale)", PeriodiFerie.invernalePerAnno("A", 2027)!!.nome)
+        assertEquals("Invernale A (Natale)", PeriodiFerie.invernalePerAnno("D", 2027)!!.nome)
         assertEquals(LocalDate.of(2028, 4, 13), PeriodiFerie.invernali(2027).first { it.nome.contains("Pasqua") }.dal)
         assertEquals(LocalDate.of(2028, 4, 19), PeriodiFerie.invernali(2027).first { it.nome.contains("Pasqua") }.al)
-        assertEquals("Invernale A (Natale)", PeriodiFerie.invernalePerAnno("A", 2027)!!.nome)
     }
 
     @Test fun seiPeriodiInvernali() {
