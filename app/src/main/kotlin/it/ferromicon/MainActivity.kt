@@ -1566,7 +1566,12 @@ class MainActivity : Activity() {
                 scegliProfilo(dati, "")
             } else azione(nome)
         }
-        AlertDialog.Builder(this)
+        var finestra: AlertDialog? = null
+        contenitore.addView(Button(this).apply {
+            text = Profilo.UFFICIO.etichetta
+            setOnClickListener { finestra?.dismiss(); conNome { salvaProfilo(dati, Profilo.UFFICIO, it) } }
+        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        finestra = AlertDialog.Builder(this)
             .setTitle("Benvenuto in Ferromicon")
             .setMessage("Scrivi il tuo nome: sarà il nome del tuo profilo. Poi scegli se sei macchinista o capotreno: " +
                 "da questa scelta dipendono limiti di prestazione, condotta o scorta, riposi e indennità. " +
@@ -1582,7 +1587,8 @@ class MainActivity : Activity() {
                     startActivity(Intent(this, CedoliniActivity::class.java).putExtra(CedoliniActivity.EXTRA_PRIMO, true))
                 }
             }
-            .show()
+            .create()
+        finestra?.show()
     }
 
     private fun salvaProfilo(dati: Dati, p: Profilo, nome: String) {
