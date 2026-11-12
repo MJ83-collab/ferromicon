@@ -39,7 +39,7 @@ class CedoliniActivity : Activity() {
         title = "Cedolini e CU"
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         radice.setOnApplyWindowInsetsListener { v, insets ->
-            v.setPadding(0, 0, 0, if (android.os.Build.VERSION.SDK_INT >= 30)
+            v.setPadding(0, if (android.os.Build.VERSION.SDK_INT >= 30) insets.getInsets(android.view.WindowInsets.Type.statusBars()).top else insets.systemWindowInsetTop, 0, if (android.os.Build.VERSION.SDK_INT >= 30)
                 insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom else 0)
             insets
         }

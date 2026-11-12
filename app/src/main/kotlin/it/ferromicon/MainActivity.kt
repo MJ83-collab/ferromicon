@@ -60,7 +60,7 @@ class MainActivity : Activity() {
 
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         radice.setOnApplyWindowInsetsListener { v, insets ->
-            v.setPadding(0, 0, 0, insetBasso(insets))
+            v.setPadding(0, insetAlto(insets), 0, insetBasso(insets))
             insets
         }
 
@@ -118,6 +118,10 @@ class MainActivity : Activity() {
     // ---------- navigazione: barra in basso e scheda Strumenti ----------
 
     @Suppress("DEPRECATION")
+    private fun insetAlto(i: android.view.WindowInsets): Int =
+        if (Build.VERSION.SDK_INT >= 30) i.getInsets(android.view.WindowInsets.Type.statusBars()).top
+        else i.systemWindowInsetTop
+
     private fun insetBasso(i: android.view.WindowInsets): Int =
         if (Build.VERSION.SDK_INT >= 30) i.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom
         else i.systemWindowInsetBottom
@@ -180,6 +184,7 @@ class MainActivity : Activity() {
             Strumento("🏖️", "Pianifica ferie", "I periodi più lunghi a casa", 20),
             Strumento("⭐", "Servizi preferiti", "Modelli da inserire con un tocco", 6),
             Strumento("📥", "Importa turno", "Da testo incollato", 7),
+            Strumento("📂", "Importa file", "Zip, .ics, backup .json o PDF: riconosce il tipo", 31),
             Strumento("🔁", "Turno ciclico", "Genera più settimane", 8)
         ))
         gruppo("Paga e regole", listOf(
@@ -257,6 +262,10 @@ class MainActivity : Activity() {
             5 -> startActivity(Intent(this, AnnoActivity::class.java).putExtra(AnnoActivity.EXTRA_ANNO, mese.year))
             6 -> gestisciPreferiti()
             7 -> importaDaTesto()
+            31 -> startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+            }, RICHIESTA_IMPORTA_FILE)
             8 -> generaTurno()
             9 -> ScegliContenuto.mostra(this, "Cosa esportare", "Continua") { opzioni ->
                 opzioniIcs = opzioni
@@ -320,6 +329,7 @@ class MainActivity : Activity() {
                 Toast.makeText(this, "Backup non riuscito: ${e.message}", Toast.LENGTH_LONG).show()
             }
             RICHIESTA_GTFS -> importaOrario(uri)
+            RICHIESTA_IMPORTA_FILE -> smistaFile(uri)
             RICHIESTA_ICS -> try {
                 contentResolver.openOutputStream(uri)?.use {
                     it.write(CalendarioIcs.genera(Archivio.caricaTutto(this), opzioni = opzioniIcs).toByteArray())
@@ -333,44 +343,8 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
                 Toast.makeText(this, "Esportazione non riuscita: ${e.message}", Toast.LENGTH_LONG).show()
             }
-            RICHIESTA_IMPORTA_ICS -> try {
-                val testo = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                    ?: throw IllegalArgumentException("File vuoto")
-                val letti = CalendarioIcs.leggi(testo, System.currentTimeMillis())
-                if (letti.servizi.isEmpty() && letti.assenze.isEmpty()) {
-                    Toast.makeText(this, "Nel file non ci sono servizi o assenze di Ferromicon", Toast.LENGTH_LONG).show()
-                } else AlertDialog.Builder(this)
-                    .setTitle("Aggiungere all'agenda?")
-                    .setMessage("Il file contiene ${letti.servizi.size} servizi e ${letti.assenze.size} giornate di " +
-                        "assenza o riposo. Si aggiungono a quelli che hai; i riposi e le assenze negli stessi giorni " +
-                        "vengono sostituiti.")
-                    .setPositiveButton("Aggiungi") { _, _ ->
-                        val nuovi = Archivio.aggiungi(this, letti.servizi, letti.assenze)
-                        aggiorna()
-                        Toast.makeText(this, "Aggiunti $nuovi servizi", Toast.LENGTH_SHORT).show()
-                    }
-                    .setNegativeButton("Annulla", null)
-                    .show()
-            } catch (e: Exception) {
-                Toast.makeText(this, "Importazione non riuscita: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-            RICHIESTA_RIPRISTINO -> try {
-                val testo = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                    ?: throw IllegalArgumentException("File vuoto")
-                val dati = Archivio.daTesto(testo)
-                AlertDialog.Builder(this)
-                    .setTitle("Ripristinare il backup?")
-                    .setMessage("Il file contiene ${dati.servizi.size} servizi e ${dati.assenze.size} giornate " +
-                        "di assenza o riposo. I dati attuali sul telefono verranno sostituiti.")
-                    .setPositiveButton("Ripristina") { _, _ ->
-                        Archivio.salvaTutto(this, dati); aggiorna()
-                        Toast.makeText(this, "Backup ripristinato", Toast.LENGTH_SHORT).show()
-                    }
-                    .setNegativeButton("Annulla", null)
-                    .show()
-            } catch (e: Exception) {
-                Toast.makeText(this, "File non valido: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+            RICHIESTA_IMPORTA_ICS -> importaIcs(uri)
+            RICHIESTA_RIPRISTINO -> importaRipristino(uri)
         }
     }
 
@@ -1151,6 +1125,77 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun importaIcs(uri: Uri) {
+        try {
+                val testo = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: throw IllegalArgumentException("File vuoto")
+                val letti = CalendarioIcs.leggi(testo, System.currentTimeMillis())
+                if (letti.servizi.isEmpty() && letti.assenze.isEmpty()) {
+                    Toast.makeText(this, "Nel file non ci sono servizi o assenze di Ferromicon", Toast.LENGTH_LONG).show()
+                } else AlertDialog.Builder(this)
+                    .setTitle("Aggiungere all'agenda?")
+                    .setMessage("Il file contiene ${letti.servizi.size} servizi e ${letti.assenze.size} giornate di " +
+                        "assenza o riposo. Si aggiungono a quelli che hai; i riposi e le assenze negli stessi giorni " +
+                        "vengono sostituiti.")
+                    .setPositiveButton("Aggiungi") { _, _ ->
+                        val nuovi = Archivio.aggiungi(this, letti.servizi, letti.assenze)
+                        aggiorna()
+                        Toast.makeText(this, "Aggiunti $nuovi servizi", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Annulla", null)
+                    .show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Importazione non riuscita: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    private fun importaRipristino(uri: Uri) {
+        try {
+                val testo = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: throw IllegalArgumentException("File vuoto")
+                val dati = Archivio.daTesto(testo)
+                AlertDialog.Builder(this)
+                    .setTitle("Ripristinare il backup?")
+                    .setMessage("Il file contiene ${dati.servizi.size} servizi e ${dati.assenze.size} giornate " +
+                        "di assenza o riposo. I dati attuali sul telefono verranno sostituiti.")
+                    .setPositiveButton("Ripristina") { _, _ ->
+                        Archivio.salvaTutto(this, dati); aggiorna()
+                        Toast.makeText(this, "Backup ripristinato", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Annulla", null)
+                    .show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "File non valido: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    /** Un solo punto di ingresso: il tipo di file si riconosce dall'estensione. */
+    private fun smistaFile(uri: Uri) {
+        val nome = nomeFile(uri).lowercase()
+        when {
+            nome.endsWith(".zip") -> importaOrario(uri)
+            nome.endsWith(".ics") -> importaIcs(uri)
+            nome.endsWith(".json") -> importaRipristino(uri)
+            nome.endsWith(".pdf") -> AlertDialog.Builder(this)
+                .setTitle("Che PDF è?")
+                .setMessage("Dal nome non si capisce il tipo. Scegli dove importarlo: nella schermata " +
+                    "tocca «Importa» e scegli di nuovo il file.")
+                .setPositiveButton("Cedolino") { _, _ -> startActivity(Intent(this, CedoliniActivity::class.java)) }
+                .setNeutralButton("Diario") { _, _ -> startActivity(Intent(this, DiarioActivity::class.java)) }
+                .setNegativeButton("Calendario agente") { _, _ -> startActivity(Intent(this, AgenteActivity::class.java)) }
+                .show()
+            else -> Toast.makeText(this, "Formato non riconosciuto: usa .zip, .ics, .json o .pdf", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun nomeFile(uri: Uri): String {
+        contentResolver.query(uri, null, null, null, null)?.use { c ->
+            val colonna = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            if (colonna >= 0 && c.moveToFirst()) return c.getString(colonna) ?: ""
+        }
+        return uri.lastPathSegment ?: ""
+    }
+
     /** Importazione in un thread separato: l'orario regionale è grande. */
     private fun importaOrario(uri: Uri) {
         val attesa = AlertDialog.Builder(this)
@@ -1397,6 +1442,7 @@ class MainActivity : Activity() {
         private const val RICHIESTA_ICS = 12
         private const val RICHIESTA_GTFS = 13
         private const val RICHIESTA_IMPORTA_ICS = 14
+        private const val RICHIESTA_IMPORTA_FILE = 15
 
         fun ore(min: Long) = String.format("%d h %02d'", min / 60, min % 60)
 
