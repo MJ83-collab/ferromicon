@@ -53,6 +53,11 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!BenvenutoActivity.visto(this)) {
+            startActivity(Intent(this, BenvenutoActivity::class.java))
+            finish()
+            return
+        }
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
@@ -164,7 +169,7 @@ class MainActivity : Activity() {
             voce.setTypeface(null, if (scelta) Typeface.BOLD else Typeface.NORMAL)
         }
         title = when (scheda) {
-            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ferromicon" else "Ferromicon · $it" }
+            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ciao" else "Ciao, $it" }
             Scheda.RIEPILOGO -> "Riepilogo del mese"
             Scheda.STRUMENTI -> "Strumenti"
         }
