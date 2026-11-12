@@ -1,6 +1,13 @@
 # Novità
 
-Versione 0.0.18 (versionCode 18). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+## 0.0.19
+- Profilo «Personale di ufficio» con regole proprie, separate dal capotreno: prestazione ordinaria 7 h 36', straordinario oltre, segnalazione del lavoro notturno.
+- Flessibilità mensile dello staff: saldo con riporto di ±5 h, avviso quando lo supera.
+- Cartellino SAP: controllo delle giornate con una sola timbratura (entrata e uscita; la pausa pranzo non si timbra) e delle uscite anticipate senza permesso.
+- Permessi ad ore: calcolo come da vademecum (sotto l'ora si scala un'ora, sopra si scalano i minuti esatti, la giornata intera 7 h 36').
+- Ex festività: quattro giorni individuali, conteggio dei giorni residui.
+
+Versione 0.0.19 (versionCode 19). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
 
 ## 0.0.18
 - Schermata principale: se il livello non è impostato compare un avviso che porta alle Impostazioni.

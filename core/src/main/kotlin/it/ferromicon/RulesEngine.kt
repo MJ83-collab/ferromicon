@@ -16,7 +16,7 @@ import java.time.LocalTime
 enum class Profilo(val etichetta: String) {
     MACCHINISTA("Macchinista (PdM)"),
     CAPOTRENO("Capo treno (PdB)"),
-    /** Personale d'ufficio: nessun servizio in agenda; per i limiti si usano le regole del capotreno, che non vengono mai applicate. */
+    /** Personale di staff (ufficio): orario fisso 08:15-16:21 e flessibilità mensile ±5 h. Regole in [OrarioStaff]. */
     UFFICIO("Personale di ufficio")
 }
 
@@ -43,7 +43,8 @@ data class LimitiOrario(val diurnoMinuti: Int, val notturnoMinuti: Int) {
         /** Limiti del contratto Altarail (art. 17.2.2 e 17.3.2); il macchinista ha 10 h una volta tra due riposi. */
         fun contratto(p: Profilo) = when (p) {
             Profilo.MACCHINISTA -> LimitiOrario(8 * 60 + 30, 7 * 60)
-            Profilo.CAPOTRENO, Profilo.UFFICIO -> LimitiOrario(10 * 60, 8 * 60)
+            Profilo.CAPOTRENO -> LimitiOrario(10 * 60, 8 * 60)
+            Profilo.UFFICIO -> LimitiOrario(OrarioStaff.PRESTAZIONE_MINUTI, OrarioStaff.PRESTAZIONE_MINUTI)
         }
     }
 }
@@ -91,7 +92,8 @@ object RegoleAltarail {
         // PdM: ai fini dell'orario massimo conta la fascia 01:00-05:00 (art. 17.3.1;
         //). Una fine tra 00:01 e 01:00 resta quindi diurna.
         Profilo.MACCHINISTA -> minutiInFascia(t.inizio, t.fine, ORE_1, ORE_5) > 0
-        Profilo.CAPOTRENO, Profilo.UFFICIO -> minutiInFasciaNotturna(t.inizio, t.fine) > 0
+        Profilo.CAPOTRENO -> minutiInFasciaNotturna(t.inizio, t.fine) > 0
+        Profilo.UFFICIO -> minutiInFasciaNotturna(t.inizio, t.fine) > 0
     }
 
     /**
@@ -168,7 +170,15 @@ object RegoleAltarail {
                     else -> esiti += Esito(Gravita.OK, "Prestazione entro 8 h 30'.")
                 }
             }
-            Profilo.CAPOTRENO, Profilo.UFFICIO -> if (notturno) {
+            Profilo.UFFICIO -> if (notturno) {
+                esiti += Esito(Gravita.ATTENZIONE,
+                    "Lavoro notturno non previsto per il personale di staff: verifica il dato.")
+            } else {
+                if (durata > OrarioStaff.PRESTAZIONE_MINUTI) esiti += Esito(Gravita.INFO,
+                    "Oltre 7 h 36' di orario ordinario: l'eccedenza è straordinario.")
+                else esiti += Esito(Gravita.OK, "Prestazione entro 7 h 36' (orario ordinario staff).")
+            }
+            Profilo.CAPOTRENO -> if (notturno) {
                 if (durata > 8 * 60) esiti += Esito(Gravita.VIOLAZIONE,
                     "Prestazione notturna oltre 8 h (Altarail art. 17.3.2; CCNL SP2 B.1).")
                 else esiti += Esito(Gravita.OK, "Prestazione notturna entro 8 h.")

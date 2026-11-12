@@ -6,7 +6,9 @@ data class GiornataSap(
     val sigla: String,
     val prima: String?,
     val ultima: String?,
-    val flex: Double?
+    val flex: Double?,
+    /** Numero di timbrature del giorno (entrate e uscite, servizi fuori sede inclusi). */
+    val numeroTimbrature: Int = 0
 )
 
 /** Cartellino di un mese letto dal PDF SAP. [righeGrezze] è il testo letto, per controllare o correggere. */
@@ -33,6 +35,8 @@ object LettoreCartellino {
     // Nel PDF SAP la voce è scritta «Flessibilià» (senza la t): il pattern accetta entrambe.
     private val FLEX_PRECEDENTE = Regex("""Flessibili?t?[aà]\s+mese\s+precedente\D*(-?\d{1,3},\d{2}-?)""", RegexOption.IGNORE_CASE)
     private val RIGA_TIMBRATURA = Regex("""^(Timbrature|Maggior presenza)""", RegexOption.IGNORE_CASE)
+    // Solo le righe «Timbrature» sono timbrature; «Maggior presenza» è un calcolo della stampa.
+    private val RIGA_SOLE_TIMBRATURE = Regex("""\bTimbrature\b""", RegexOption.IGNORE_CASE)
 
     /** Converte «0,45-» o «-0,45» in -0.45; «1,02» in 1.02. */
     fun valore(token: String): Double {
@@ -58,8 +62,10 @@ object LettoreCartellino {
             val b = blocco ?: return
             val orari = b.flatMap { ORA.findAll(it).map { m -> m.value }.toList() }
             val flex = b.flatMap { NUMERO.findAll(it).map { m -> m.value }.toList() }.lastOrNull()
+            val timbrature = b.filter { RIGA_SOLE_TIMBRATURE.containsMatchIn(it) }
+                .sumOf { r -> ORA.findAll(r).count() }
             giornate += GiornataSap(giorno, sigla, orari.firstOrNull(), orari.lastOrNull(),
-                flex?.let { valore(it) })
+                flex?.let { valore(it) }, timbrature)
             blocco = null
         }
 
