@@ -236,6 +236,7 @@ class MainActivity : Activity() {
         gruppo("Orari e rubrica", listOf(
             Strumento("🎫", "Abilitazioni", "Linee e tipi di treno per cui sei abilitato", 43),
             Strumento("🔎", "Cerca treno", "Cronologia per numero: mesi e turni", 44),
+            Strumento("🪪", "Cerca CID", "Nome e impianto da un elenco importato", 45),
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
             Strumento("📒", "Rubrica stazioni", "Numeri utili", 12),
             Strumento("🗓️", "Esporta calendario", "File .ics: scegli cosa, anche su Drive", 9),
@@ -297,6 +298,7 @@ class MainActivity : Activity() {
             40 -> startActivity(Intent(this, WikiActivity::class.java))
             43 -> startActivity(Intent(this, AbilitazioniActivity::class.java))
             44 -> startActivity(Intent(this, CronologiaTrenoActivity::class.java))
+            45 -> startActivity(Intent(this, CercaCidActivity::class.java))
             41 -> startActivity(Intent(this, CartellinoSapActivity::class.java))
             42 -> startActivity(Intent(this, EsportaActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
