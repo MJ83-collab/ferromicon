@@ -14,11 +14,14 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import org.json.JSONObject
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -118,7 +121,12 @@ object Aggiornamenti {
         }.start()
     }
 
-    /** Scarica l'APK e lo passa all'installatore di sistema. [fine] riceve null se tutto è andato bene, altrimenti il motivo. */
+    /**
+     * Scarica l'APK in una cartella che il gestore file del telefono vede, poi apre l'installazione
+     * classica di Android sul file. Non usa più la sessione dell'installatore, che con l'app aperta
+     * veniva rifiutata («deve essere chiuso durante l'aggiornamento»).
+     * [fine] riceve null se l'installazione si è aperta, altrimenti il motivo.
+     */
     fun scaricaEInstalla(ctx: Context, fine: (String?) -> Unit) {
         val app = ctx.applicationContext
         if (Build.VERSION.SDK_INT >= 26 && !app.packageManager.canRequestPackageInstalls()) {
@@ -128,31 +136,38 @@ object Aggiornamenti {
             return
         }
         Thread {
+            var scaricato: File? = null
             var errore: String? = null
             try {
                 val conn = apri(BASE + "ferromicon.apk")
-                val lunghezza = conn.contentLengthLong
-                val installer = app.packageManager.packageInstaller
-                val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-                val id = installer.createSession(params)
-                installer.openSession(id).use { sessione ->
-                    sessione.openWrite("ferromicon.apk", 0, if (lunghezza > 0) lunghezza else -1).use { out ->
-                        conn.inputStream.use { it.copyTo(out) }
-                        sessione.fsync(out)
-                    }
-                    conn.disconnect()
-                    val intento = Intent(app, InstallazioneReceiver::class.java).setAction(AZIONE)
-                    val flag = PendingIntent.FLAG_UPDATE_CURRENT or
-                        (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0)
-                    sessione.commit(PendingIntent.getBroadcast(app, id, intento, flag).intentSender)
-                }
+                val cartella = app.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: app.filesDir
+                cartella.mkdirs()
+                val destinazione = File(cartella, "ferromicon.apk")
+                conn.inputStream.use { entrata -> destinazione.outputStream().use { uscita -> entrata.copyTo(uscita) } }
+                conn.disconnect()
+                scaricato = destinazione
             } catch (e: FileNotFoundException) {
                 errore = "Non trovo l'APK online (la repo deve essere pubblica)."
             } catch (e: Exception) {
-                errore = "Aggiornamento non riuscito: ${e.javaClass.simpleName} ${e.message ?: ""}".trim()
+                errore = "Download non riuscito: ${e.javaClass.simpleName} ${e.message ?: ""}".trim()
             }
-            Handler(Looper.getMainLooper()).post { fine(errore) }
+            val file = scaricato
+            Handler(Looper.getMainLooper()).post {
+                fine(if (file == null) errore else apriInstallatore(app, file))
+            }
         }.start()
+    }
+
+    /** Apre la schermata di installazione di Android sul file. Restituisce null se si è aperta. */
+    private fun apriInstallatore(app: Context, apk: File): String? = try {
+        val uri = FileProvider.getUriForFile(app, "${app.packageName}.aggiornamenti", apk)
+        app.startActivity(Intent(Intent.ACTION_VIEW)
+            .setDataAndType(uri, "application/vnd.android.package-archive")
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK))
+        null
+    } catch (e: Exception) {
+        "APK scaricato in ${apk.absolutePath}, ma non riesco ad aprire l'installazione (${e.javaClass.simpleName}). " +
+            "Aprilo con il gestore file del telefono."
     }
 
     /** Finestra «nuova versione» con il pulsante per installare. */
