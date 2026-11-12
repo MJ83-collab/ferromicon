@@ -3,7 +3,7 @@
     <string name="app_name">Ferromicon</string>
     <string name="widget_prossimo_descrizione">Il prossimo servizio e quando puoi riprendere</string>
     <string name="widget_oggi_descrizione">Il servizio o l\'assenza di oggi, e quello di domani</string>
-    <string name="widget_permessi_descrizione">Quanti giorni di permesso restano da usare quest'anno</string>
+    <string name="widget_permessi_descrizione">Quanti giorni di permesso restano da usare quest\'anno</string>
     <string name="widget_riposo_descrizione">Quanti giorni mancano al prossimo riposo o alle ferie</string>
     <string name="widget_mese_descrizione">Ore del mese, straordinario e prossima scadenza dei festivi</string>
 </resources>
