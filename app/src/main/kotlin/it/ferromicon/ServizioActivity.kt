@@ -40,6 +40,7 @@ class ServizioActivity : Activity() {
 
     private val fmtData = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ITALIAN)
     private val fmtOra = DateTimeFormatter.ofPattern("HH:mm")
+    private val fmtNota = DateTimeFormatter.ofPattern("dd/MM HH:mm")
 
     private lateinit var profilo: Spinner
     private lateinit var btnData: Button
@@ -156,12 +157,14 @@ class ServizioActivity : Activity() {
 
         materiale = EditText(this).apply { hint = "es. Caravaggio, TSR, Coradia" }
         col.addView(etichetta("Materiale rotabile")); col.addView(materiale)
+        col.addView(Button(this).apply { text = "Copia dal servizio precedente"; setOnClickListener { copiaMaterialePrecedente() } })
         secondoAgente = EditText(this).apply { hint = "Nome del collega" }
         etichettaCollega = etichetta("Capo treno")
         col.addView(etichettaCollega); col.addView(secondoAgente)
 
         note = EditText(this).apply { hint = "Note" }
         col.addView(etichetta("Note")); col.addView(note)
+        col.addView(Button(this).apply { text = "Aggiungi nota"; setOnClickListener { aggiungiNota() } })
 
         val bottoni = LinearLayout(this)
         bottoni.addView(Button(this).apply { text = "Verifica"; setOnClickListener { verifica() } },
@@ -245,6 +248,37 @@ class ServizioActivity : Activity() {
     }
 
     private fun inizioServizio() = LocalDateTime.of(data, oraInizio)
+
+    /** Ricopia il materiale rotabile dal servizio più recente che inizia prima di questo. */
+    private fun copiaMaterialePrecedente() {
+        val inizio = inizioServizio()
+        val prec = Archivio.caricaTutto(this).servizi
+            .filter { it.id != esistente?.id && it.materiale.isNotBlank() && it.turno.inizio.isBefore(inizio) }
+            .maxByOrNull { it.turno.inizio }
+        if (prec == null) {
+            Toast.makeText(this, "Nessun servizio precedente con materiale", Toast.LENGTH_SHORT).show()
+        } else {
+            materiale.setText(prec.materiale)
+        }
+    }
+
+    /** Aggiunge una nota in fondo, con data e ora di quando è stata scritta: le note si impilano. */
+    private fun aggiungiNota() {
+        val campo = EditText(this).apply { hint = "Testo della nota" }
+        AlertDialog.Builder(this)
+            .setTitle("Nuova nota")
+            .setView(campo)
+            .setPositiveButton("Aggiungi") { _, _ ->
+                val testo = campo.text.toString().trim()
+                if (testo.isNotEmpty()) {
+                    val riga = "${LocalDateTime.now().format(fmtNota)}  $testo"
+                    val precedente = note.text.toString().trim()
+                    note.setText(if (precedente.isEmpty()) riga else "$precedente\n$riga")
+                }
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
+    }
 
     // ---------- righe treno ----------
 
