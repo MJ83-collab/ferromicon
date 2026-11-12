@@ -153,6 +153,16 @@ object Archivio {
     }
 
     /** Aggiunge cedolini e CU letti dai PDF; uno stesso mese o anno viene sostituito. */
+    /** Salva il cartellino SAP di un mese; uno stesso mese viene sostituito. */
+    fun aggiungiCartellino(ctx: Context, c: CartellinoSap) = modifica(ctx) { d ->
+        d.copy(cartellini = (d.cartellini.filterNot { it.anno == c.anno && it.mese == c.mese } + c)
+            .sortedWith(compareBy({ it.anno }, { it.mese })))
+    }
+
+    fun eliminaCartellino(ctx: Context, anno: Int, mese: Int) = modifica(ctx) { d ->
+        d.copy(cartellini = d.cartellini.filterNot { it.anno == anno && it.mese == mese })
+    }
+
     fun aggiungiCedolini(ctx: Context, cedolini: List<Cedolino>, cu: List<CertificazioneUnica>) = modifica(ctx) { d ->
         val mesi = cedolini.map { it.anno to it.mese }.toSet()
         val anni = cu.map { it.anno }.toSet()
@@ -201,6 +211,7 @@ object Archivio {
         })
         dati.turno?.let { put("turno", turnoAJson(it)) }
         put("cedolini", JSONArray().apply { dati.cedolini.forEach { put(CedoliniJson.cedolino(it)) } })
+        put("cartellini", JSONArray().apply { dati.cartellini.forEach { put(CartellinoSapJson.aJson(it)) } })
         put("cu", JSONArray().apply { dati.certificazioniUniche.forEach { put(CedoliniJson.cu(it)) } })
         put("cestino", JSONArray().apply {
             dati.cestino.forEach { v ->
@@ -236,6 +247,7 @@ object Archivio {
             },
             turno = o.optJSONObject("turno")?.let { turnoDa(it) },
             cedolini = lista(o.optJSONArray("cedolini")) { CedoliniJson.cedolinoDa(it) },
+            cartellini = lista(o.optJSONArray("cartellini")) { CartellinoSapJson.daJson(it) },
             certificazioniUniche = lista(o.optJSONArray("cu")) { CedoliniJson.cuDa(it) },
             cestino = lista(o.optJSONArray("cestino")) {
                 VoceCestino(
@@ -302,7 +314,7 @@ object Archivio {
         turno = Turno(
             inizio = LocalDateTime.parse(o.getString("inizio")),
             fine = LocalDateTime.parse(o.getString("fine")),
-            profilo = Profilo.valueOf(o.getString("profilo")),
+            profilo = runCatching { Profilo.valueOf(o.getString("profilo")) }.getOrDefault(Profilo.MACCHINISTA),
             minutiCondotta = o.optInt("condotta", 0),
             maxCondottaConsecutiva = o.optInt("consecutiva", 0),
             turnoAZeta = o.optBoolean("zeta", false)

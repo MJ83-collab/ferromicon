@@ -15,7 +15,9 @@ import java.time.LocalTime
 
 enum class Profilo(val etichetta: String) {
     MACCHINISTA("Macchinista (PdM)"),
-    CAPOTRENO("Capo treno (PdB)")
+    CAPOTRENO("Capo treno (PdB)"),
+    /** Personale d'ufficio: nessun servizio in agenda; per i limiti si usano le regole del capotreno, che non vengono mai applicate. */
+    UFFICIO("Personale di ufficio")
 }
 
 data class Turno(
@@ -41,7 +43,7 @@ data class LimitiOrario(val diurnoMinuti: Int, val notturnoMinuti: Int) {
         /** Limiti del contratto Altarail (art. 17.2.2 e 17.3.2); il macchinista ha 10 h una volta tra due riposi. */
         fun contratto(p: Profilo) = when (p) {
             Profilo.MACCHINISTA -> LimitiOrario(8 * 60 + 30, 7 * 60)
-            Profilo.CAPOTRENO -> LimitiOrario(10 * 60, 8 * 60)
+            Profilo.CAPOTRENO, Profilo.UFFICIO -> LimitiOrario(10 * 60, 8 * 60)
         }
     }
 }
@@ -89,7 +91,7 @@ object RegoleAltarail {
         // PdM: ai fini dell'orario massimo conta la fascia 01:00-05:00 (art. 17.3.1;
         //). Una fine tra 00:01 e 01:00 resta quindi diurna.
         Profilo.MACCHINISTA -> minutiInFascia(t.inizio, t.fine, ORE_1, ORE_5) > 0
-        Profilo.CAPOTRENO -> minutiInFasciaNotturna(t.inizio, t.fine) > 0
+        Profilo.CAPOTRENO, Profilo.UFFICIO -> minutiInFasciaNotturna(t.inizio, t.fine) > 0
     }
 
     /**
@@ -166,7 +168,7 @@ object RegoleAltarail {
                     else -> esiti += Esito(Gravita.OK, "Prestazione entro 8 h 30'.")
                 }
             }
-            Profilo.CAPOTRENO -> if (notturno) {
+            Profilo.CAPOTRENO, Profilo.UFFICIO -> if (notturno) {
                 if (durata > 8 * 60) esiti += Esito(Gravita.VIOLAZIONE,
                     "Prestazione notturna oltre 8 h (Altarail art. 17.3.2; CCNL SP2 B.1).")
                 else esiti += Esito(Gravita.OK, "Prestazione notturna entro 8 h.")

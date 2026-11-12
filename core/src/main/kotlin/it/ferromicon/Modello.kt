@@ -314,7 +314,9 @@ data class Dati(
     val cedolini: List<Cedolino> = emptyList(),
     val certificazioniUniche: List<CertificazioneUnica> = emptyList(),
     /** Turno dell'impianto caricato dal personale viaggiante (null = nessuno). */
-    val turno: TurnoImpianto? = null
+    val turno: TurnoImpianto? = null,
+    /** Cartellini SAP letti dai PDF: uno per mese. */
+    val cartellini: List<CartellinoSap> = emptyList()
 ) {
     /** Sposta un servizio nel cestino. */
     fun eliminaServizio(id: Long, adesso: LocalDateTime): Dati {

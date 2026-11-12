@@ -1,6 +1,12 @@
 # Novità
 
-Versione 0.0.12 (versionCode 12). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.13 (versionCode 13). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.13
+- Cartellino SAP: in Strumenti si sceglie il PDF stampato dal cartellino. L'app legge timbrature e flessibilità di ogni giorno e mostra il risultato; si salva solo dopo conferma. «Mostra il testo letto» serve a controllare la lettura.
+- Profilo «Personale di ufficio»: si sceglie nelle Impostazioni. I widget mostrano il profilo scelto.
+- Stabilità: un profilo sconosciuto in un servizio non fa più perdere l'archivio; l'avviso dei permessi e la home non possono più interrompere l'app se un dato non si legge.
+- Ancora da fare: calcolo del cassetto (fondo cassa) e widget dedicati all'ufficio; profilo temporaneo/inidoneo.
 
 ## 0.0.12
 - Wiki Ferrovia: in Strumenti. Tabelle dei tempi accessori, abbreviazioni, permessi e ricerca; funziona senza connessione.
