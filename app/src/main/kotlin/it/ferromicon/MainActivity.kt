@@ -366,6 +366,17 @@ class MainActivity : Activity() {
         titolo.text = "${nomeMese.replaceFirstChar { c -> c.titlecase(locale) }} ${mese.year}"
         contenuto.removeAllViews()
         destinazione = contenuto
+        Aggiornamenti.novitaDisponibile(this)?.let { nome ->
+            contenuto.addView(TextView(this).apply {
+                text = "Disponibile Ferromicon $nome · tocca per installare"
+                setTextColor(Stile.testo)
+                textSize = 15f
+                background = Stile.arrotondato(Stile.primarioChiaro, 12)
+                setPadding(dp(14), dp(12), dp(14), dp(12))
+                setOnClickListener { Aggiornamenti.controllaSubito(this@MainActivity) }
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, dp(12)) })
+        }
         try {
             when (scheda) {
                 Scheda.STRUMENTI -> strumenti()
