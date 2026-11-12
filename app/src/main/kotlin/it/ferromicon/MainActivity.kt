@@ -68,6 +68,7 @@ class MainActivity : Activity() {
             finish()
             return
         }
+        if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
@@ -1576,12 +1577,7 @@ class MainActivity : Activity() {
             .setCancelable(false)
             .setPositiveButton(Profilo.MACCHINISTA.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.MACCHINISTA, it) } }
             .setNegativeButton(Profilo.CAPOTRENO.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.CAPOTRENO, it) } }
-            .setNeutralButton("Leggilo da un cedolino") { _, _ ->
-                conNome { nome ->
-                    Archivio.salvaImpostazioni(this, Archivio.caricaTutto(this).impostazioni.copy(nome = nome))
-                    startActivity(Intent(this, CedoliniActivity::class.java).putExtra(CedoliniActivity.EXTRA_PRIMO, true))
-                }
-            }
+            .setNeutralButton(Profilo.UFFICIO.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.UFFICIO, it) } }
             .show()
     }
 
@@ -1599,7 +1595,9 @@ class MainActivity : Activity() {
                 "correggerla. Ti servono le giornate salvate come servizi preferiti: puoi farlo anche più tardi " +
                 "da Strumenti > Il mio turno.\n\nPer ferie e scatti imposta anche data di assunzione e livello.")
             .setPositiveButton("Il mio CID e calendario") { _, _ -> startActivity(Intent(this, AgenteActivity::class.java)) }
-            .setNeutralButton("Impostazioni") { _, _ -> startActivity(Intent(this, ImpostazioniActivity::class.java)) }
+            .setNeutralButton("Leggi da un cedolino") { _, _ ->
+                startActivity(Intent(this, CedoliniActivity::class.java).putExtra(CedoliniActivity.EXTRA_PRIMO, true))
+            }
             .setNegativeButton("Più tardi", null)
             .show()
     }

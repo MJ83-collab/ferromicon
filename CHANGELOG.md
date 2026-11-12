@@ -1,5 +1,11 @@
 # Novità
 
+## 0.0.22
+- Aggiornamenti: il controllo di una versione nuova parte a ogni apertura dell'app, senza attendere le 12 ore.
+- Primo avvio: si sceglie anche «Personale di ufficio»; la lettura del cedolino passa alla schermata successiva.
+
+Versione 0.0.22 (versionCode 22).
+
 ## 0.0.21
 - Pianificazione ferie: lettera del gruppo per ogni anno, con il ciclo D – A – C – E – F – B; periodo invernale con le date quando la tabella dell'anno è inserita.
 - Calcoli interni del calendario dei riposi (sequenze A–G), verificati fino al 07/01/2028.
