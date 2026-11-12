@@ -194,7 +194,10 @@ class MainActivity : Activity() {
             voce.setTypeface(null, if (scelta) Typeface.BOLD else Typeface.NORMAL)
         }
         title = when (scheda) {
-            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ciao" else "Ciao, $it" }
+            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.let { imp ->
+                val saluto = if (imp.nome.isBlank()) "Ciao" else "Ciao, ${imp.nome}"
+                if (imp.impianto.isBlank()) saluto else "$saluto · ${imp.impianto}"
+            }
             Scheda.RIEPILOGO -> "Riepilogo del mese"
             Scheda.STRUMENTI -> "Strumenti"
         }
