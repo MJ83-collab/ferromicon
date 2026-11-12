@@ -53,18 +53,26 @@ class AgenteActivity : Activity() {
 
         contenuto.addView(testo("Carica i PDF dell'impianto, scrivi il CID o il nome dell'agente e genero il suo " +
             "calendario: giornate di turno con orari e treni, riposi e ferie. I PDF restano sul telefono.", 14f))
-        contenuto.addView(Button(this).apply {
-            text = "1. Carica il calendario degli agenti (PDF)"
-            setOnClickListener { scegliPdf(RICHIESTA_CALENDARIO) }
-        })
-        contenuto.addView(Button(this).apply {
-            text = "2. Carica i turni del personale (PDF, orari e treni)"
-            setOnClickListener { scegliPdf(RICHIESTA_TURNI) }
-        })
-        contenuto.addView(Button(this).apply {
-            text = "3. Carica il calendario rotativo dei riposi (PDF)"
-            setOnClickListener { scegliPdf(RICHIESTA_ROTATIVO) }
-        })
+        // I tre caricamenti stanno in una scheda unica, con titolo e spazio tra i pulsanti.
+        val caricamenti = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = Stile.scheda(14)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+        }
+        caricamenti.addView(titolo("Carica i PDF").apply { setPadding(0, 0, 0, dp(8)) })
+        fun pulsante(etichetta: String, richiesta: Int) = Button(this).apply {
+            text = etichetta
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 0, 0, dp(8)) }
+            setOnClickListener { scegliPdf(richiesta) }
+        }
+        caricamenti.addView(pulsante("1. Calendario degli agenti (PDF)", RICHIESTA_CALENDARIO))
+        caricamenti.addView(pulsante("2. Turni del personale (PDF, orari e treni)", RICHIESTA_TURNI))
+        caricamenti.addView(pulsante("3. Calendario rotativo dei riposi (PDF)", RICHIESTA_ROTATIVO))
+        contenuto.addView(caricamenti, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { setMargins(0, dp(8), 0, dp(4)) })
         stato = testo("", 13f)
         contenuto.addView(stato)
 
