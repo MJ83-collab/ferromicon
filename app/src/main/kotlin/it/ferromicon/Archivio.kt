@@ -415,6 +415,8 @@ object Archivio {
         put("ultimoViaggio", JSONObject().apply { i.ultimoViaggio.forEach { (k, v) -> put(k, v.toString()) } })
         put("giorniSogliaAbilitazioni", i.giorniSogliaAbilitazioni)
         put("promemoriaMinuti", i.promemoriaMinuti)
+        put("avvisoRecuperoAttivo", i.avvisoRecuperoAttivo)
+        put("giorniAvvisoRecupero", i.giorniAvvisoRecupero)
         put("letteraGruppoFerie", i.letteraGruppoFerie?.toString() ?: "")
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
             put("diurno", it.diurnoMinuti); put("notturno", it.notturnoMinuti)
@@ -448,6 +450,8 @@ object Archivio {
         } ?: emptyMap(),
         giorniSogliaAbilitazioni = o.optInt("giorniSogliaAbilitazioni", 90),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
+        avvisoRecuperoAttivo = o.optBoolean("avvisoRecuperoAttivo", true),
+        giorniAvvisoRecupero = o.optInt("giorniAvvisoRecupero", 7).coerceIn(1, 30),
         letteraGruppoFerie = o.optString("letteraGruppoFerie", "").firstOrNull()?.uppercaseChar(),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {
             LimitiOrario(it.optInt("diurno", 510), it.optInt("notturno", 420))

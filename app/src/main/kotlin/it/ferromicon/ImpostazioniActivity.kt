@@ -129,6 +129,21 @@ class ImpostazioniActivity : Activity() {
         }
         col.addView(etichetta("Promemoria prima del servizio")); col.addView(promemoria)
 
+        val avvisoRecupero = CheckBox(this).apply {
+            text = "Avviso per il recupero festività"
+            isChecked = imp.avvisoRecuperoAttivo
+        }
+        val giorniRecupero = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setText(imp.giorniAvvisoRecupero.toString())
+            hint = "7"
+        }
+        col.addView(etichetta("Recupero festività"))
+        col.addView(nota("Ti avvisa ogni mattina alle 9 quando la scadenza più vicina è entro il numero di giorni indicato."))
+        col.addView(avvisoRecupero)
+        col.addView(TextView(this).apply { text = "Giorni prima della scadenza (1–30)"; textSize = 12f })
+        col.addView(giorniRecupero)
+
         // Aspetto: chiaro, scuro o come il telefono (la scelta manuale richiede Android 12 o successivo)
         col.addView(etichetta("Aspetto"))
         if (android.os.Build.VERSION.SDK_INT >= 31) {
@@ -213,6 +228,8 @@ class ImpostazioniActivity : Activity() {
                     parentaliSpettanti = parentali.text.toString().toIntOrNull() ?: 0,
                     permessiSpettanti = permessiSpettantiCampo.text.toString().toIntOrNull() ?: 0,
                     promemoriaMinuti = opzioniPromemoria[promemoria.selectedItemPosition],
+                    avvisoRecuperoAttivo = avvisoRecupero.isChecked,
+                    giorniAvvisoRecupero = giorniRecupero.text.toString().toIntOrNull()?.coerceIn(1, 30) ?: 7,
                     redditoAnnuo = reddito.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0,
                     inpsPct = inpsPct.text.toString().replace(',', '.').toDoubleOrNull() ?: 9.19,
                     addComunalePct = comunale.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.8,

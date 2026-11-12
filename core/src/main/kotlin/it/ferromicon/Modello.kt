@@ -219,6 +219,10 @@ data class Impostazioni(
     val limitiOrario: LimitiOrario? = null,
     /** Scelte manuali sul recupero delle festività: vero = recuperabile, falso = non recuperabile. */
     val festiviForzati: Map<LocalDate, Boolean> = emptyMap(),
+    /** Avviso per il recupero festività attivo o no. */
+    val avvisoRecuperoAttivo: Boolean = true,
+    /** Giorni prima della scadenza più vicina in cui inizia l'avviso per il recupero festività (1–30). */
+    val giorniAvvisoRecupero: Int = 7,
     /** Reddito imponibile annuo (dal CU o dal cedolino di dicembre), per stimare il netto; 0 = non impostato. */
     val redditoAnnuo: Double = 0.0,
     /** Contributi INPS a carico del lavoratore, in %. */

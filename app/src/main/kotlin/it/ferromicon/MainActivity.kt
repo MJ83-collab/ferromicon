@@ -898,12 +898,30 @@ class MainActivity : Activity() {
                 setMargins(dp(1), dp(1), dp(1), dp(1))
             })
         }
-        testo("Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
-            "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · CA chiusura aziendale · " +
-            "A altra assenza · " +
-            "S straordinario (sul servizio).", Stile.secondario, 12f)
-        testo("Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
-            "Tocca un giorno per aggiungere o vedere le voci.", Stile.secondario, 12f)
+        val vociLegenda = listOf(
+            "Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
+                "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · CA chiusura aziendale · " +
+                "A altra assenza · S straordinario (sul servizio).",
+            "Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
+                "Tocca un giorno per aggiungere o vedere le voci."
+        ).map { t ->
+            TextView(this).apply {
+                text = t
+                textSize = 12f
+                setPadding(0, dp(2), 0, dp(2))
+                setTextColor(Stile.secondario)
+                visibility = android.view.View.GONE
+            }
+        }
+        vociLegenda.forEach { destinazione.addView(it) }
+        destinazione.addView(Button(this).apply {
+            text = "Legenda ▾"
+            setOnClickListener {
+                val aperta = vociLegenda.first().visibility == android.view.View.VISIBLE
+                vociLegenda.forEach { it.visibility = if (aperta) android.view.View.GONE else android.view.View.VISIBLE }
+                text = if (aperta) "Legenda ▾" else "Legenda ▴"
+            }
+        })
     }
 
     // ---------- selezione di date ----------
@@ -1495,7 +1513,7 @@ class MainActivity : Activity() {
         val fmt = DateTimeFormatter.ofPattern("d MMM HH:mm", Locale.ITALIAN)
         AlertDialog.Builder(this)
             .setTitle("Tocca per ripristinare")
-            .setItems(voci.map { "${it.descrizione}  ·  eliminato ${fmt.format(it.eliminatoIl)}" }.toTypedArray()) { _, i ->
+            .setItems(voci.map { "${it.descrizione}  ·  eliminato ${fmt.format(it.eliminatoIl)}  ·  scade il ${fmt.format(it.eliminatoIl.plusDays(30))}" }.toTypedArray()) { _, i ->
                 Archivio.ripristina(this, voci[i]); aggiorna()
                 Toast.makeText(this, "${voci[i].descrizione} ripristinato", Toast.LENGTH_SHORT).show()
             }
