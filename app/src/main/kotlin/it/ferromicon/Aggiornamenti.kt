@@ -41,7 +41,7 @@ object Aggiornamenti {
 
     sealed class Esito {
         data class Nuova(val nome: String, val codice: Long) : Esito()
-        data class Aggiornato(val nomeOnline: String) : Esito()
+        data class Aggiornato(val nomeOnline: String, val piuRecente: Boolean = false) : Esito()
         data class Errore(val messaggio: String) : Esito()
     }
 
@@ -109,7 +109,7 @@ object Aggiornamenti {
                     Esito.Nuova(nome, codice)
                 } else {
                     p.edit().remove("nuova").apply()
-                    Esito.Aggiornato(nome)
+                    Esito.Aggiornato(nome, piuRecente = codice < versioneAttuale(app).second)
                 }
             } catch (e: FileNotFoundException) {
                 Esito.Errore("Non trovo la versione online. Per l'aggiornamento automatico la repo su GitHub " +
@@ -236,7 +236,8 @@ object Aggiornamenti {
                 is Esito.Aggiornato -> AlertDialog.Builder(a)
                     .setTitle("Sei aggiornato")
                     .setMessage("Versione installata: ${versioneAttuale(a).first} (codice ${versioneAttuale(a).second}).\n" +
-                        "Ultima versione online: ${esito.nomeOnline}.")
+                        (if (esito.piuRecente) "Questa versione è più recente dell'ultima pubblicata online (${esito.nomeOnline}): è una versione in sviluppo."
+                         else "Ultima versione online: ${esito.nomeOnline}."))
                     .setPositiveButton("OK", null)
                     .setNeutralButton(if (automatico(a)) "Disattiva controllo automatico" else "Attiva controllo automatico") { _, _ ->
                         impostaAutomatico(a, !automatico(a))

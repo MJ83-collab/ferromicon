@@ -76,6 +76,13 @@ class BenvenutoActivity : Activity() {
                 setSelection(attuale.profilo?.let { Profilo.values().indexOf(it) + 1 } ?: 0)
             }
             colonna.addView(qualifica)
+            colonna.addView(testo("Livello / posizione retributiva (facoltativo, lo trovi in busta paga)"))
+            val livello = Spinner(this).apply {
+                adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
+                    listOf("Non impostato") + Livello.values().map { it.name })
+                setSelection((attuale.livello?.ordinal ?: -1) + 1)
+            }
+            colonna.addView(livello)
             colonna.addView(Button(this).apply {
                 text = "Inizia"
                 setOnClickListener {
@@ -86,7 +93,8 @@ class BenvenutoActivity : Activity() {
                     }
                     salvaProfilo(nome, cidCampo.text.toString().trim().take(20),
                         Impianti.tutti[impianto.selectedItemPosition - 1],
-                        Profilo.values()[qualifica.selectedItemPosition - 1])
+                        Profilo.values()[qualifica.selectedItemPosition - 1],
+                        if (livello.selectedItemPosition == 0) null else Livello.values()[livello.selectedItemPosition - 1])
                     segnaVisto(this@BenvenutoActivity)
                     startActivity(Intent(this@BenvenutoActivity, MainActivity::class.java))
                     finish()
@@ -103,10 +111,11 @@ class BenvenutoActivity : Activity() {
         })
     }
 
-    private fun salvaProfilo(nome: String, cid: String, impianto: String, profilo: Profilo) {
+    private fun salvaProfilo(nome: String, cid: String, impianto: String, profilo: Profilo, livello: Livello?) {
         runCatching {
             val imp = Archivio.caricaTutto(this).impostazioni
-            Archivio.salvaImpostazioni(this, imp.copy(nome = nome, cid = cid, impianto = impianto, profilo = profilo))
+            Archivio.salvaImpostazioni(this, imp.copy(nome = nome, cid = cid, impianto = impianto,
+                profilo = profilo, livello = livello))
         }.onFailure {
             Toast.makeText(this, "Il profilo non è stato salvato. Riprova dalle Impostazioni.", Toast.LENGTH_LONG).show()
         }
