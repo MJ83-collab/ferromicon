@@ -68,6 +68,40 @@ class FerieActivity : Activity() {
                 }
             }
         })
+        col.addView(TextView(this).apply {
+            text = "Gruppo e periodo invernale"; textSize = 16f; setTextColor(Stile.testo)
+            setPadding(0, dp(24), 0, dp(4))
+        })
+        val lettera2026 = EditText(this).apply {
+            hint = "Lettera del gruppo nel 2026 (A–F)"
+            setText(dati.impostazioni.letteraGruppoFerie?.toString() ?: "")
+        }
+        val anno = EditText(this).apply {
+            hint = "Anno, es. 2029"; inputType = InputType.TYPE_CLASS_NUMBER; setText("2026")
+        }
+        val esito = TextView(this).apply { textSize = 15f; setTextColor(Stile.testo); setPadding(0, dp(8), 0, 0) }
+        col.addView(lettera2026); col.addView(anno); col.addView(esito)
+        col.addView(Button(this).apply {
+            text = "Calcola il periodo"
+            setOnClickListener {
+                val l = lettera2026.text.toString().trim().firstOrNull()?.uppercaseChar()
+                val a = anno.text.toString().trim().toIntOrNull()
+                if (l == null || l !in 'A'..'F' || a == null) {
+                    Toast.makeText(this@FerieActivity, "Inserisci una lettera A–F e un anno valido", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+                Archivio.salvaTutto(this@FerieActivity,
+                    dati.copy(impostazioni = dati.impostazioni.copy(letteraGruppoFerie = l)))
+                val lettera = PeriodiFerie.letteraPerAnno(l, a)
+                val periodo = PeriodiFerie.invernale(lettera, a)
+                esito.text = if (periodo != null)
+                    "Nel $a il gruppo è $lettera: ${periodo.nome}, dal ${fmtData.format(periodo.da)} al ${fmtData.format(periodo.a)}."
+                else
+                    "Nel $a il gruppo è $lettera. Le date del periodo invernale $a/${a + 1} non sono ancora inserite: " +
+                        "vanno aggiunte dall'avviso di quell'anno."
+            }
+        })
+
         setContentView(ScrollView(this).apply { addView(col) })
     }
 

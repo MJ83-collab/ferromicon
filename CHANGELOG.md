@@ -1,5 +1,11 @@
 # Novità
 
+## 0.0.21
+- Pianificazione ferie: lettera del gruppo per ogni anno, con il ciclo D – A – C – E – F – B; periodo invernale con le date quando la tabella dell'anno è inserita.
+- Calcoli interni del calendario dei riposi (sequenze A–G), verificati fino al 07/01/2028.
+
+Versione 0.0.21 (versionCode 21).
+
 ## 0.0.20
 - Benvenuto al primo avvio: funzioni dell'app, avviso legale (app non ufficiale, possibili errori), autore. Si rivede da Impostazioni › Informazioni e responsabilità.
 - Home: saluto «Ciao, [nome]» quando il nome è impostato.
