@@ -213,6 +213,10 @@ data class Impostazioni(
     val abilitazioniLinee: List<String> = emptyList(),
     /** Tipi di treno (materiale rotabile) che il macchinista è abilitato a guidare. */
     val abilitazioniMacchine: List<String> = emptyList(),
+    /** Ultimo viaggio inserito a mano: chiave "L:S5" per una linea, "M:TSR" per un tipo di treno. */
+    val ultimoViaggio: Map<String, LocalDate> = emptyMap(),
+    /** Giorni senza viaggi oltre i quali l'abilitazione va rinnovata (avviso). */
+    val giorniSogliaAbilitazioni: Int = 90,
 ) {
     /** Profilo da usare per i nuovi servizi. */
     val profiloAttivo: Profilo get() = profilo ?: Profilo.MACCHINISTA
