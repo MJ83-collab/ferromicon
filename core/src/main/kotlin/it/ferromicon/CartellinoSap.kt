@@ -6,7 +6,9 @@ data class GiornataSap(
     val sigla: String,
     val prima: String?,
     val ultima: String?,
-    val flex: Double?
+    val flex: Double?,
+    /** Numero di timbrature del giorno (entrate e uscite, servizi fuori sede inclusi). */
+    val numeroTimbrature: Int = 0
 )
 
 /** Cartellino di un mese letto dal PDF SAP. [righeGrezze] è il testo letto, per controllare o correggere. */
@@ -59,7 +61,7 @@ object LettoreCartellino {
             val orari = b.flatMap { ORA.findAll(it).map { m -> m.value }.toList() }
             val flex = b.flatMap { NUMERO.findAll(it).map { m -> m.value }.toList() }.lastOrNull()
             giornate += GiornataSap(giorno, sigla, orari.firstOrNull(), orari.lastOrNull(),
-                flex?.let { valore(it) })
+                flex?.let { valore(it) }, orari.size)
             blocco = null
         }
 
