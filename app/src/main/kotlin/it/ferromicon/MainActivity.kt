@@ -384,6 +384,17 @@ class MainActivity : Activity() {
             }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, dp(12)) })
         }
+        if (runCatching { Archivio.caricaTutto(this).impostazioni.livello == null }.getOrDefault(false)) {
+            contenuto.addView(TextView(this).apply {
+                text = "Imposta il livello in Impostazioni: serve per la paga oraria. Tocca per aprirle."
+                setTextColor(Stile.testo)
+                textSize = 14f
+                background = Stile.arrotondato(Stile.primarioChiaro, 12)
+                setPadding(dp(14), dp(10), dp(14), dp(10))
+                setOnClickListener { startActivity(Intent(this@MainActivity, ImpostazioniActivity::class.java)) }
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, dp(12)) })
+        }
         Aggiornamenti.novitaDisponibile(this)?.let { nome ->
             contenuto.addView(TextView(this).apply {
                 text = "Disponibile Ferromicon $nome · tocca per installare"

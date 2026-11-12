@@ -1,6 +1,9 @@
 # Novità
 
-Versione 0.0.17 (versionCode 17). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.18 (versionCode 18). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.18
+- Schermata principale: se il livello non è impostato compare un avviso che porta alle Impostazioni.
 
 ## 0.0.17
 - Dopo un aggiornamento, il calendario del telefono viene risincronizzato da solo con i dati salvati (sul calendario già scelto in «Calendario del telefono»).
