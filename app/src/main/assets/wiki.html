@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Wiki Ferrovia</title>
+<style>
+/* Layout: testata con ricerca in alto, indice sotto, poi le sezioni in colonna singola. */
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --fg: #1d2330;
+  --muted: #5d6676;
+  --line: #d9dce3;
+  --accent: #1f5fa8;
+  --accent-soft: #e4eef9;
+  --mark: #ffe58a;
+  --hit: #fff4c2;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171d;
+    --surface: #1c2029;
+    --fg: #e6e8ee;
+    --muted: #9aa3b2;
+    --line: #2f3542;
+    --accent: #7fb2ef;
+    --accent-soft: #20324a;
+    --mark: #6b5a12;
+    --hit: #3a3416;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171d;
+  --surface: #1c2029;
+  --fg: #e6e8ee;
+  --muted: #9aa3b2;
+  --line: #2f3542;
+  --accent: #7fb2ef;
+  --accent-soft: #20324a;
+  --mark: #6b5a12;
+  --hit: #3a3416;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: 16px;
+  padding-bottom: 40px;
+}
+h1, h2, h3 { line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 1.6rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.2rem; margin-bottom: 8px; }
+h3 { font-size: 1rem; margin: 18px 0 6px; }
+p { margin: 0 0 10px; max-width: 65ch; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+.wrap { max-width: 1000px; margin: 0 auto; }
+
+header.top {
+  display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end;
+  justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.search { display: flex; gap: 8px; width: 100%; max-width: 420px; }
+.search input {
+  flex: 1; min-width: 0; font: inherit; padding: 9px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.search input:focus, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+button {
+  font: inherit; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap;
+}
+
+nav.index {
+  margin: 16px 0; padding: 14px 16px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+nav.index h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+nav.index ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+nav.index a { color: var(--accent); text-decoration: none; }
+nav.index a:hover { text-decoration: underline; }
+
+#risultati { margin: 0 0 8px; }
+#risultati:empty { display: none; }
+.results {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 16px;
+}
+.result { display: block; padding: 10px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; }
+.result:first-of-type { border-top: 0; }
+.result:hover .rtitle { text-decoration: underline; }
+.rsec { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.rtitle { font-weight: 600; color: var(--accent); }
+.snip { font-size: 0.9rem; color: var(--muted); }
+mark { background: var(--mark); color: var(--fg); padding: 0 2px; border-radius: 3px; }
+
+section.wiki {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 16px; margin-bottom: 18px; scroll-margin-top: 16px;
+}
+.scroll { overflow-x: auto; margin: 10px 0 4px; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; min-width: 560px; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: center; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; background: var(--accent-soft); font-size: 0.78rem; }
+td:first-child, th:first-child { text-align: left; font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tr.hit td { background: var(--hit); transition: background 2s; }
+.na { color: var(--muted); font-weight: 600; }
+.ref-list { margin: 6px 0 0; padding-left: 20px; }
+.ref-list li { margin-bottom: 4px; }
+.pending {
+  border: 1px dashed var(--line); border-radius: 8px; padding: 12px 14px; color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) { tr.hit td { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Wiki Ferrovia</h1>
+      <p class="muted">Tabelle e regole operative per il personale di accompagnamento (PdA).</p>
+    </div>
+    <form class="search" id="form-cerca" role="search">
+      <input id="q" type="search" placeholder="Cerca una parola, es. ETR 421" aria-label="Cerca nella wiki">
+      <button type="submit">Cerca</button>
+    </form>
+  </header>
+
+  <nav class="index" aria-label="Indice">
+    <h2>Indice</h2>
+    <ol>
+      <li><a href="#tempi-1">Tempi accessori: primo treno del turno o sosta oltre 2 h</a></li>
+      <li><a href="#tempi-2">Tempi accessori: fine corsa, stazionamento, parking, cambio volante</a></li>
+      <li><a href="#tempi-3">Tempi accessori: ripresa dopo sosta o da parking</a></li>
+      <li><a href="#timbrature">Verifica timbrature e orario (SAP)</a></li>
+      <li><a href="#permessi">Permessi: scadenza a fine anno</a></li>
+      <li><a href="#glossario">Abbreviazioni</a></li>
+      <li><a href="#vademecum">Regole del vademecum</a></li>
+    </ol>
+  </nav>
+
+  <div id="risultati" class="results" aria-live="polite"></div>
+
+  <section class="wiki" id="tempi-1">
+    <h2>Tempi accessori PdA: primo treno del turno o treno con sosta oltre 2 h</h2>
+    <p>Tempi per il personale di accompagnamento al primo treno del turno materiale giornaliero e/o treno con sosta oltre 2 h e materiale disabilitato. Ai tempi indicati vanno aggiunti i tempi per il coadiuvo di eventuali manovre o attività di verifica, definiti per ogni stazione. I tempi per recarsi al treno, se non stazionato nei binari di arrivo e partenza, sono inclusi nei tempi di manovra o attività di verifica.</p>
+    <div class="scroll"><table id="t1"></table></div>
+  </section>
+
+  <section class="wiki" id="tempi-2">
+    <h2>Tempi accessori PdA: fine corsa del treno</h2>
+    <p>Tempi a termine corsa del treno con stazionamento e disabilitazione, oppure messa in stato di parking o cambio volante. Ai tempi si aggiungono i tempi per il coadiuvo di eventuali manovre, definiti per ogni stazione.</p>
+    <div class="scroll"><table id="t2"></table></div>
+  </section>
+
+  <section class="wiki" id="tempi-3">
+    <h2>Tempi accessori PdA: ripresa del materiale dopo sosta o da parking</h2>
+    <p>Tempi per la ripresa del materiale rotabile dopo sosta inferiore a 2 h, oppure da parking o cambio volante, comprensivi dei tempi di prova freno di tipo D.</p>
+    <ul class="ref-list">
+      <li>In caso di sosta con materiale stazionato da oltre 2 h e impresenziato si applicano i tempi completi.</li>
+      <li>Gli accessori in arrivo e partenza (cambio banco) per tutti i treni effettuati dallo stesso personale e con lo stesso materiale sono 15' (5' + 10').</li>
+      <li>I tempi di cambio banco sono riducibili alla sosta di fatto dell'impianto.</li>
+    </ul>
+    <div class="scroll"><table id="t3"></table></div>
+  </section>
+
+  <section class="wiki" id="timbrature">
+    <h2>Verifica timbrature e orario (SAP)</h2>
+    <ol class="ref-list">
+      <li>Premere F2, poi Invio.</li>
+      <li>Passo da completare: tornare alla timbratura precedente (da confermare con l'utente).</li>
+    </ol>
+  </section>
+
+  <section class="wiki" id="permessi">
+    <h2>Permessi: scadenza a fine anno</h2>
+    <ul class="ref-list">
+      <li>I permessi non utilizzati entro il 31 dicembre si perdono.</li>
+      <li>La regola vale per tutti i profili (macchinista, capotreno, personale di ufficio).</li>
+    </ul>
+  </section>
+
+  <section class="wiki" id="glossario">
+    <h2>Abbreviazioni</h2>
+    <ul class="ref-list">
+      <li><strong>PdA</strong>: personale di accompagnamento.</li>
+      <li><strong>P.F.</strong>: prova freno. <strong>P.F. tipo A</strong>: prova freno di tipo A.</li>
+      <li><strong>Prova freno tipo D</strong>: compresa nei tempi di ripresa della sezione 3.</li>
+      <li><strong>nd</strong>: non definito nella tabella di origine.</li>
+      <li><strong>NON AMMESSO</strong>: scritto così nella tabella di origine per quel materiale e modalità.</li>
+      <li><strong>Cambio banco</strong>: indicato nella tabella come 15' (5' + 10') per i treni effettuati dallo stesso personale con lo stesso materiale.</li>
+    </ul>
+  </section>
+
+  <section class="wiki" id="vademecum">
+    <h2>Regole del vademecum</h2>
+    <div class="pending">
+      <p>Questa sezione è in attesa. Le regole del vademecum saranno inserite in una prossima versione dell'app.</p>
+    </div>
+  </section>
+
+  <p class="muted">Valori trascritti dalla "Tabella tempi accessori, Personale di Scorta, rev. 5-2". Verificare sul documento originale prima dell'uso operativo.</p>
+</div>
+
+<script>
+const NA = "NON AMMESSO";
+
+const T1_COLS = ["NO P.F.", "Freno manuale o semi-automatica: totale", "base", "P.F. tipo A", "Freno automatica strumentale: totale"];
+const T1 = [
+  ["E464 + 8 carrozze", 25, 35, 25, 10, "—"],
+  ["E464 fino a 7 carrozze", 20, 30, 20, 10, "—"],
+  ["TSR + TSR", 25, 35, 25, 10, "—"],
+  ["TAF + TAF", 25, 35, 25, 10, "—"],
+  ["ETR 421 + ETR 421", 25, 35, 25, 10, 25],
+  ["ETR 103/104/204 + ETR 103/104/204", 20, 30, 20, 10, 20],
+  ["ETR 524 + ETR 524", 20, 30, 20, 10, 20],
+  ["TSR 6", 20, 30, 20, 10, "—"],
+  ["ETR 245/425/526 + ETR 245/425/526", 15, 25, 15, 10, 15],
+  ["ATR 115/125 + ATR 115/125", 15, 25, 15, 10, 15],
+  ["ETR 421", 15, 20, 15, 5, 15],
+  ["ETR 521/522", 15, 20, 15, 5, 15],
+  ["ETR 524", 15, 20, 15, 5, 15],
+  ["TSR 3/4/5", 15, 20, 15, 5, "—"],
+  ["TAF", 15, 20, 15, 5, "—"],
+  ["ETR 103/104/204", 15, 20, 15, 5, 15],
+  ["ETR 245/425/526", 15, 20, 15, 5, 15],
+  ["Ale 582 (3 o 4 carrozze)", 15, 20, 15, 5, "—"],
+  ["1 Aln 668", 15, 20, 15, 5, "—"],
+  ["2 Aln 668", 15, 20, 15, 5, "—"],
+  ["3 Aln 668", 15, 20, 15, 5, "—"],
+  ["ATR 115/125/803", 15, 20, 15, 5, "—"]
+];
+
+const T2_COLS = ["Fine corsa commerciale, con o senza cambio volante", "Fine corsa invio materiale, con o senza cambio volante"];
+const T2 = [
+  ["E464 + 8 carrozze", 10, 0], ["E464 + 7 carrozze", 10, 0], ["TSR + TSR (8 casse)", 10, 0],
+  ["TAF + TAF", 10, 0], ["ETR 421 + ETR 421", 10, 0], ["ETR 103/104/204 + ETR 103/104/204", 10, 0],
+  ["TSR 6", 10, 0], ["TSR 3/4/5", 10, 0], ["ETR 421", 10, 0], ["ETR 521", 10, 0],
+  ["ETR 103/104/204", 10, 0], ["ETR 245/425/526 + ETR 245/425/526", 5, 0], ["TAF", 5, 0],
+  ["Ale 582 (3 o 4 carrozze)", 5, 0], ["ETR 245/425/526", 5, 0], ["ETR 524", 5, 0],
+  ["ETR 524 + ETR 524", 5, 0], ["1 Aln 668", 5, 0], ["2 Aln 668", 5, 0], ["3 Aln 668", 5, 0],
+  ["ATR 115/125/803", 5, 0], ["ATR 115/125 + ATR 115/125", 5, 0]
+];
+
+const T3_COLS = ["Da stazionamento con disabilitazione < 2 h", "Da stazionamento con disabilitazione > 2 h (tempi completi, più PFA nei casi previsti)", "Da parking impresenziato < 2 h", "Da parking impresenziato > 2 h (tempi completi, più PFA nei casi previsti)", "Partenza con cambio volante", "Prova freno tipo A da aggiungere nei casi previsti (tempi base di ripresa)"];
+const T3 = [
+  ["E464 + 8 carrozze (monopiano)", 15, 25, 15, 25, 10, 10],
+  ["E464 fino a 7 carrozze (vivalto)", 15, 20, 15, 20, 10, 10],
+  ["TSR + TSR", 15, 25, 15, 25, 10, 10],
+  ["TAF + TAF", 15, 25, 15, 25, 10, 10],
+  ["ETR 421 + ETR 421", 15, 25, 15, 25, 10, 10],
+  ["ETR 103/104/204 + ETR 103/104/204", 15, 20, 15, 20, 10, "nd"],
+  ["ETR 524 + ETR 524", 15, 20, 15, 20, 10, 10],
+  ["TSR 6", 15, 20, 15, 20, 10, 10],
+  ["ETR 245/425/526 + ETR 245/425/526", 15, 15, 15, 15, 10, 10],
+  ["ATR 115/125 + ATR 115/125", 15, 15, 15, 15, 10, 10],
+  ["ETR 421", 15, 15, 15, 15, 10, 5],
+  ["ETR 521", 15, 15, 15, 15, 10, 5],
+  ["ETR 524", 15, 15, 15, 15, 10, 5],
+  ["TSR 3/4/5", 15, 15, 15, 15, 10, 5],
+  ["TAF", 15, 15, 15, 15, 10, 5],
+  ["ETR 103/104/204", 15, 15, 15, 15, 10, "nd"],
+  ["ETR 245/425/526", 15, 15, 15, 15, 10, 5],
+  ["Ale 582 (3 o 4 carrozze)", 15, 15, NA, NA, 10, 5],
+  ["1 Aln 668", 15, 15, NA, NA, 10, 5],
+  ["2 Aln 668", 15, 15, NA, NA, 10, 5],
+  ["3 Aln 668", 15, 15, NA, NA, 10, 5],
+  ["ATR 115/125", 15, 15, NA, NA, 10, 5],
+  ["ATR 803", 15, 15, 15, 15, 10, 5]
+];
+
+// Costruisce una tabella e restituisce le voci per la ricerca (una per riga).
+function buildTable(id, cols, rows, sectionTitle, sectionId, entries) {
+  const table = document.getElementById(id);
+  const thead = "<thead><tr><th>Tipologia materiale rotabile</th>" +
+    cols.map(c => "<th>" + c + "</th>").join("") + "</tr></thead>";
+  const body = rows.map((r, i) => {
+    const cells = r.slice(1).map(v => {
+      const s = String(v);
+      const cls = (s === NA) ? ' class="na"' : "";
+      return "<td" + cls + ">" + s + "</td>";
+    }).join("");
+    const rowId = id + "-r" + i;
+    entries.push({
+      section: sectionTitle, sectionId, rowId,
+      title: r[0],
+      text: r[0] + " | " + cols.map((c, j) => c + ": " + r[j + 1]).join(" | ")
+    });
+    return '<tr id="' + rowId + '"><td>' + r[0] + "</td>" + cells + "</tr>";
+  }).join("");
+  table.innerHTML = thead + "<tbody>" + body + "</tbody>";
+}
+
+const entries = [];
+buildTable("t1", T1_COLS, T1, "Tempi accessori PdA: primo treno del turno", "tempi-1", entries);
+buildTable("t2", T2_COLS, T2, "Tempi accessori PdA: fine corsa", "tempi-2", entries);
+buildTable("t3", T3_COLS, T3, "Tempi accessori PdA: ripresa dopo sosta o da parking", "tempi-3", entries);
+
+// Voci per le sezioni testuali.
+document.querySelectorAll("section.wiki").forEach(sec => {
+  if (sec.querySelector("table")) return;
+  entries.push({
+    section: sec.querySelector("h2").textContent,
+    sectionId: sec.id, rowId: null,
+    title: sec.querySelector("h2").textContent,
+    text: sec.textContent.replace(/\s+/g, " ").trim()
+  });
+});
+
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function snippet(text, query) {
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(query.toLowerCase());
+  if (idx < 0) return esc(text.slice(0, 140));
+  const start = Math.max(0, idx - 50);
+  const end = Math.min(text.length, idx + query.length + 90);
+  const before = (start > 0 ? "…" : "") + text.slice(start, idx);
+  const match = text.slice(idx, idx + query.length);
+  const after = text.slice(idx + query.length, end) + (end < text.length ? "…" : "");
+  return esc(before) + "<mark>" + esc(match) + "</mark>" + esc(after);
+}
+
+function search(raw) {
+  const box = document.getElementById("risultati");
+  const q = raw.trim();
+  if (!q) { box.innerHTML = ""; return; }
+  const words = q.toLowerCase().split(/\s+/);
+  const hits = entries.filter(e => {
+    const t = e.text.toLowerCase();
+    return words.every(w => t.includes(w));
+  });
+  if (!hits.length) {
+    box.innerHTML = '<div class="results"><p>Nessun risultato per "' + esc(q) + '".</p></div>';
+    return;
+  }
+  const shown = hits.slice(0, 40);
+  box.innerHTML = '<div class="results"><p class="muted">' + hits.length + ' risultat' +
+    (hits.length === 1 ? "o" : "i") + ' per "' + esc(q) + '"</p>' +
+    shown.map((e, i) =>
+      '<a class="result" href="#' + e.sectionId + '" data-i="' + i + '">' +
+      '<div class="rsec">' + esc(e.section) + '</div>' +
+      '<div class="rtitle">' + esc(e.title) + '</div>' +
+      '<div class="snip">' + snippet(e.text, words[0]) + '</div></a>'
+    ).join("") + "</div>";
+  box.querySelectorAll("a.result").forEach((a, i) => {
+    a.addEventListener("click", ev => {
+      ev.preventDefault();
+      jumpTo(shown[i]);
+    });
+  });
+}
+
+function jumpTo(e) {
+  const sec = document.getElementById(e.sectionId);
+  if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (e.rowId) {
+    const row = document.getElementById(e.rowId);
+    if (row) {
+      row.classList.add("hit");
+      setTimeout(() => row.classList.remove("hit"), 2500);
+    }
+  }
+}
+
+document.getElementById("form-cerca").addEventListener("submit", ev => {
+  ev.preventDefault();
+  search(document.getElementById("q").value);
+});
+document.getElementById("q").addEventListener("input", ev => search(ev.target.value));
+</script>
+
+</html>

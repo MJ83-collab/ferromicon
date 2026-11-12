@@ -58,6 +58,7 @@ class MainActivity : Activity() {
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
         }
 
+        AvvisoPermessi.controllaMensile(this)
         val radice = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         radice.setOnApplyWindowInsetsListener { v, insets ->
             v.setPadding(0, insetAlto(insets), 0, insetBasso(insets))
@@ -194,7 +195,8 @@ class MainActivity : Activity() {
             Strumento("📔", "Diario di bordo", "Controlla diario, turno e cedolino", 23),
             Strumento("⬆️", "Aggiornamenti", Aggiornamenti.riga(this), 24),
             Strumento("💶", "Straordinario netto", "Quanto resta in tasca", 16),
-            Strumento("🏠", "Perimetri di residenza", "Ore fuori residenza", 15)
+            Strumento("🏠", "Perimetri di residenza", "Ore fuori residenza", 15),
+            Strumento("📖", "Wiki Ferrovia", "Tempi accessori, abbreviazioni, permessi: senza connessione", 40)
         ))
         gruppo("Orari e rubrica", listOf(
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
@@ -249,6 +251,7 @@ class MainActivity : Activity() {
     /** Esegue una voce della scheda Strumenti (i numeri sono quelli storici del menu). */
     private fun esegui(id: Int) {
         when (id) {
+            40 -> startActivity(Intent(this, WikiActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/json"
@@ -366,6 +369,16 @@ class MainActivity : Activity() {
         titolo.text = "${nomeMese.replaceFirstChar { c -> c.titlecase(locale) }} ${mese.year}"
         contenuto.removeAllViews()
         destinazione = contenuto
+        AvvisoPermessi.testo(Archivio.caricaTutto(this))?.let { avviso ->
+            contenuto.addView(TextView(this).apply {
+                text = avviso
+                setTextColor(Stile.testo)
+                textSize = 14f
+                background = Stile.arrotondato(Stile.primarioChiaro, 12)
+                setPadding(dp(14), dp(10), dp(14), dp(10))
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 0, 0, dp(12)) })
+        }
         Aggiornamenti.novitaDisponibile(this)?.let { nome ->
             contenuto.addView(TextView(this).apply {
                 text = "Disponibile Ferromicon $nome · tocca per installare"

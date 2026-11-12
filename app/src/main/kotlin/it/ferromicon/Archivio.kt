@@ -393,6 +393,7 @@ object Archivio {
         put("ferieResidueAnnoPrecedente", i.ferieResidueAnnoPrecedente)
         put("permessiAggiuntivi", i.permessiAggiuntivi)
         put("parentaliSpettanti", i.parentaliSpettanti)
+        put("permessiSpettanti", i.permessiSpettanti)
         put("promemoriaMinuti", i.promemoriaMinuti)
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
             put("diurno", it.diurnoMinuti); put("notturno", it.notturnoMinuti)
@@ -418,6 +419,7 @@ object Archivio {
         ferieResidueAnnoPrecedente = o.optInt("ferieResidueAnnoPrecedente", 0),
         permessiAggiuntivi = o.optInt("permessiAggiuntivi", 0),
         parentaliSpettanti = o.optInt("parentaliSpettanti", 0),
+        permessiSpettanti = o.optInt("permessiSpettanti", 0),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {
             LimitiOrario(it.optInt("diurno", 510), it.optInt("notturno", 420))

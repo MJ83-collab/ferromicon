@@ -1,6 +1,13 @@
 # Novità
 
-Versione 0.0.11 (versionCode 11). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+Versione 0.0.12 (versionCode 12). Ogni voce è una funzione aggiunta; il modulo `app` si controlla compilando su GitHub, il modulo `core` ha 105 test.
+
+## 0.0.12
+- Wiki Ferrovia: in Strumenti. Tabelle dei tempi accessori, abbreviazioni, permessi e ricerca; funziona senza connessione.
+- Permessi: si imposta quanti giorni spettano nell'anno (Impostazioni). La home mostra presi e restanti, e una notifica compare una volta al mese.
+- Widget «Permessi da usare» (presi, restanti, avviso di fine anno).
+- Widget «Prossimo riposo»: mostra il profilo scelto.
+- Ancora da fare: profilo ufficio con i suoi widget; verifica timbrature (passo 2).
 
 ## 0.0.11
 - Aggiornamenti: banner in home quando è disponibile una versione nuova, e notifica di sistema una sola volta per versione.
