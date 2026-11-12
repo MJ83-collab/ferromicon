@@ -1566,12 +1566,7 @@ class MainActivity : Activity() {
                 scegliProfilo(dati, "")
             } else azione(nome)
         }
-        var finestra: AlertDialog? = null
-        contenitore.addView(Button(this).apply {
-            text = Profilo.UFFICIO.etichetta
-            setOnClickListener { finestra?.dismiss(); conNome { salvaProfilo(dati, Profilo.UFFICIO, it) } }
-        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
-        finestra = AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Benvenuto in Ferromicon")
             .setMessage("Scrivi il tuo nome: sarà il nome del tuo profilo. Poi scegli se sei macchinista o capotreno: " +
                 "da questa scelta dipendono limiti di prestazione, condotta o scorta, riposi e indennità. " +
@@ -1581,14 +1576,8 @@ class MainActivity : Activity() {
             .setCancelable(false)
             .setPositiveButton(Profilo.MACCHINISTA.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.MACCHINISTA, it) } }
             .setNegativeButton(Profilo.CAPOTRENO.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.CAPOTRENO, it) } }
-            .setNeutralButton("Leggilo da un cedolino") { _, _ ->
-                conNome { nome ->
-                    Archivio.salvaImpostazioni(this, Archivio.caricaTutto(this).impostazioni.copy(nome = nome))
-                    startActivity(Intent(this, CedoliniActivity::class.java).putExtra(CedoliniActivity.EXTRA_PRIMO, true))
-                }
-            }
-            .create()
-        finestra?.show()
+            .setNeutralButton(Profilo.UFFICIO.etichetta) { _, _ -> conNome { salvaProfilo(dati, Profilo.UFFICIO, it) } }
+            .show()
     }
 
     private fun salvaProfilo(dati: Dati, p: Profilo, nome: String) {
@@ -1605,7 +1594,9 @@ class MainActivity : Activity() {
                 "correggerla. Ti servono le giornate salvate come servizi preferiti: puoi farlo anche più tardi " +
                 "da Strumenti > Il mio turno.\n\nPer ferie e scatti imposta anche data di assunzione e livello.")
             .setPositiveButton("Il mio CID e calendario") { _, _ -> startActivity(Intent(this, AgenteActivity::class.java)) }
-            .setNeutralButton("Impostazioni") { _, _ -> startActivity(Intent(this, ImpostazioniActivity::class.java)) }
+            .setNeutralButton("Leggi da un cedolino") { _, _ ->
+                startActivity(Intent(this, CedoliniActivity::class.java).putExtra(CedoliniActivity.EXTRA_PRIMO, true))
+            }
             .setNegativeButton("Più tardi", null)
             .show()
     }
