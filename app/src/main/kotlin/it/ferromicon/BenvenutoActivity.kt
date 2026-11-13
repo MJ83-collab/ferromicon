@@ -43,47 +43,73 @@ class BenvenutoActivity : Activity() {
             colonna.addView(testo("Ferromicon ti aiuta a tenere in ordine turni, servizi, assenze e cedolini."))
             colonna.addView(intestazione("Cosa puoi fare"))
             FUNZIONI.forEach { colonna.addView(voce(it)) }
-            colonna.addView(intestazione("Il tuo profilo"))
-            colonna.addView(testo("Serve a personalizzare l'app. Resta solo su questo telefono."))
+            val g1 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            val g2 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            val g3 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            colonna.addView(g1); colonna.addView(g2); colonna.addView(g3)
+            fun vaiA(n: Int) {
+                listOf(g1, g2, g3).forEachIndexed { i, g ->
+                    g.visibility = if (i == n) android.view.View.VISIBLE else android.view.View.GONE
+                }
+            }
+            g1.addView(intestazione("Il tuo profilo"))
+            g1.addView(testo("Serve a personalizzare l'app. Resta solo su questo telefono."))
             val attuale = Archivio.caricaTutto(this@BenvenutoActivity).impostazioni
-            colonna.addView(testo("Nome e cognome"))
+            g1.addView(testo("Nome e cognome"))
             val campo = EditText(this).apply {
                 hint = "Nome e cognome"
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
                 maxLines = 1
                 setText(attuale.nome)
             }
-            colonna.addView(campo)
-            colonna.addView(testo("CID"))
+            g1.addView(campo)
+            g1.addView(testo("CID"))
             val cidCampo = EditText(this).apply {
                 hint = "CID"
                 inputType = InputType.TYPE_CLASS_TEXT
                 maxLines = 1
                 setText(attuale.cid)
             }
-            colonna.addView(cidCampo)
-            colonna.addView(testo("Impianto di appartenenza"))
+            g1.addView(cidCampo)
+            g1.addView(Button(this).apply {
+                text = "Avanti"
+                setOnClickListener {
+                    if (campo.text.toString().isBlank()) Toast.makeText(this@BenvenutoActivity, "Inserisci nome e cognome", Toast.LENGTH_SHORT).show()
+                    else vaiA(1)
+                }
+            })
+            g2.addView(testo("Impianto di appartenenza"))
             val impianto = Spinner(this).apply {
                 adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
                     listOf("Scegli l'impianto") + Impianti.tutti)
                 setSelection(Impianti.tutti.indexOf(attuale.impianto).let { if (it < 0) 0 else it + 1 })
             }
-            colonna.addView(impianto)
-            colonna.addView(testo("Qualifica"))
+            g2.addView(impianto)
+            g2.addView(testo("Qualifica"))
             val qualifica = Spinner(this).apply {
                 adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
                     listOf("Scegli la qualifica") + Profilo.values().map { it.etichetta })
                 setSelection(attuale.profilo?.let { Profilo.values().indexOf(it) + 1 } ?: 0)
             }
-            colonna.addView(qualifica)
-            colonna.addView(testo("Livello / posizione retributiva (facoltativo, lo trovi in busta paga)"))
+            g2.addView(qualifica)
+            g2.addView(Button(this).apply { text = "Indietro"; setOnClickListener { vaiA(0) } })
+            g2.addView(Button(this).apply {
+                text = "Avanti"
+                setOnClickListener {
+                    if (impianto.selectedItemPosition == 0 || qualifica.selectedItemPosition == 0)
+                        Toast.makeText(this@BenvenutoActivity, "Scegli impianto e qualifica", Toast.LENGTH_SHORT).show()
+                    else vaiA(2)
+                }
+            })
+            g3.addView(testo("Livello / posizione retributiva (facoltativo, lo trovi in busta paga)"))
             val livello = Spinner(this).apply {
                 adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
                     listOf("Non impostato") + Livello.values().map { it.name })
                 setSelection((attuale.livello?.ordinal ?: -1) + 1)
             }
-            colonna.addView(livello)
-            colonna.addView(Button(this).apply {
+            g3.addView(livello)
+            g3.addView(Button(this).apply { text = "Indietro"; setOnClickListener { vaiA(1) } })
+            g3.addView(Button(this).apply {
                 text = "Inizia"
                 setOnClickListener {
                     val nome = campo.text.toString().trim().take(60)
@@ -100,6 +126,7 @@ class BenvenutoActivity : Activity() {
                     finish()
                 }
             })
+            vaiA(0)
         }
 
         colonna.addView(intestazione("Informazioni e responsabilità"))

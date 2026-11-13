@@ -118,7 +118,13 @@ object RapportoPdf {
     private fun riepilogoMese(f: Foglio, d: Dati, m: YearMonth) {
         val s = servizi(d, m)
         val a = assenze(d, m)
-        f.scrivi("Servizi: ${s.size} · ore totali ${durata(s.sumOf { minuti(it) })}")
+        val profilo = d.impostazioni.profiloAttivo
+        if (profilo != Profilo.UFFICIO) f.scrivi("Servizi: ${s.size} · ore totali ${durata(s.sumOf { minuti(it) })}")
+        if (profilo == Profilo.MACCHINISTA) {
+            val r = Riepilogo.mese(d, m)
+            f.scrivi("Condotta: ${durata(r.condottaMinuti)} · servizi notturni ${r.serviziNotturni} " +
+                "(ore 22-6: ${durata(r.minutiFascia22_6)})")
+        }
         val perGruppo = a.groupBy { gruppo(it.tipo) }
         f.scrivi("Assenze: " + (if (perGruppo.isEmpty()) "nessuna"
             else perGruppo.entries.joinToString(" · ") { "${it.key} ${it.value.size}" }))
@@ -169,8 +175,10 @@ object RapportoPdf {
         f.scrivi("${MESI[m.monthValue - 1].replaceFirstChar { it.uppercase() }} ${m.year}", f.sezione)
         intestazione(f, d)
         riepilogoMese(f, d, m)
-        dettaglioMese(f, d, m)
-        if (giorni) giornoPerGiorno(f, d, m)
+        if (d.impostazioni.profiloAttivo != Profilo.UFFICIO) {
+            dettaglioMese(f, d, m)
+            if (giorni) giornoPerGiorno(f, d, m)
+        }
         f.chiudi(out)
     }
 

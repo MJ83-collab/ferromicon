@@ -106,9 +106,9 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             setOnClickListener { mese = YearMonth.now(); aggiorna() }
         }
-        intestazioneMese.addView(Button(this).apply { text = "‹"; setOnClickListener { mese = mese.minusMonths(1); aggiorna() } })
+        intestazioneMese.addView(Button(this).apply { text = "‹"; contentDescription = "Mese precedente"; setOnClickListener { mese = mese.minusMonths(1); aggiorna() } })
         intestazioneMese.addView(titolo, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        intestazioneMese.addView(Button(this).apply { text = "›"; setOnClickListener { mese = mese.plusMonths(1); aggiorna() } })
+        intestazioneMese.addView(Button(this).apply { text = "›"; contentDescription = "Mese successivo"; setOnClickListener { mese = mese.plusMonths(1); aggiorna() } })
         radice.addView(intestazioneMese)
 
         // Azioni principali, sempre a portata di pollice nella scheda Agenda
@@ -924,6 +924,7 @@ class MainActivity : Activity() {
         vociLegenda.forEach { destinazione.addView(it) }
         destinazione.addView(Button(this).apply {
             text = "Legenda ▾"
+            contentDescription = "Mostra o nascondi la legenda"
             setOnClickListener {
                 val aperta = vociLegenda.first().visibility == android.view.View.VISIBLE
                 vociLegenda.forEach { it.visibility = if (aperta) android.view.View.GONE else android.view.View.VISIBLE }

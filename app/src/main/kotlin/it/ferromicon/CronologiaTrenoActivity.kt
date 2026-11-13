@@ -10,6 +10,8 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import java.time.YearMonth
+import java.time.LocalDate
+import java.time.DateTimeException
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -40,7 +42,7 @@ class CronologiaTrenoActivity : Activity() {
             setPadding(dp(16), dp(16), dp(16), dp(16))
         }
         campo = EditText(this).apply {
-            hint = "Numero treno, es. 2514"
+            hint = "Numero treno, es. 2514, oppure data gg/mm"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
         }
         val cerca = Button(this).apply {
@@ -59,7 +61,33 @@ class CronologiaTrenoActivity : Activity() {
 
     private fun normalizza(s: String) = s.filter { !it.isWhitespace() }.uppercase()
 
+    /** Data digitata come gg/mm o gg/mm/aaaa (anno corrente se omesso). */
+    private fun cercaData(testo: String): LocalDate? {
+        val m = Regex("""(\d{1,2})/(\d{1,2})(?:/(\d{4}))?""").matchEntire(testo.trim()) ?: return null
+        val anno = m.groupValues[3].ifEmpty { LocalDate.now().year.toString() }.toInt()
+        return try { LocalDate.of(anno, m.groupValues[2].toInt(), m.groupValues[1].toInt()) }
+        catch (e: DateTimeException) { null }
+    }
+
+    private fun mostraServiziDel(data: LocalDate) {
+        val trovati = dati.servizi.filter { it.turno.inizio.toLocalDate() == data }.sortedBy { it.turno.inizio }
+        val intestazione = data.format(fmtData)
+        if (trovati.isEmpty()) {
+            mostra(TextView(this).apply { text = "Nessun servizio il $intestazione." })
+            return
+        }
+        mostra(TextView(this).apply {
+            text = trovati.joinToString("\n\n") { s ->
+                val treni = s.righe.map { it.numero }.filter { it.isNotBlank() }.distinct().joinToString(", ")
+                "${fmtOra.format(s.turno.inizio)}–${fmtOra.format(s.turno.fine)}" +
+                    (if (treni.isEmpty()) "" else "  ·  $treni")
+            }
+            textSize = 15f
+        })
+    }
+
     private fun avviaRicerca() {
+        cercaData(campo.text.toString())?.let { mostraServiziDel(it); return }
         val chiave = normalizza(campo.text.toString())
         if (chiave.isEmpty()) {
             mostra(TextView(this).apply { text = "Inserisci un numero treno." })
