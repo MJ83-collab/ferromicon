@@ -96,6 +96,16 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".ConfrontoActivity"
+            android:exported="false"
+            android:parentActivityName=".StraordinarioActivity" />
+
+        <activity
+            android:name=".VademecumActivity"
+            android:exported="false"
+            android:parentActivityName=".ConfrontoActivity" />
+
+        <activity
             android:name=".TurnoActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

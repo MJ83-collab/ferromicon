@@ -1,5 +1,10 @@
 # Novità
 
+## 0.0.27 (versionCode 27)
+- Straordinario → Confronto turno e straordinario: scegli profilo, valore dell'ora (160 ore fisse o ore effettive), fonte delle ore e le voci da mostrare (turno, straordinario, ora, impegno, notturne, trattenute, premio biglietti).
+- Premio biglietti del capotreno (voci 1A28, 1A86, 1A87, 1A99 e 7% lunga percorrenza), con importi inseriti a mano.
+- Vademecum del personale mobile (riferimento 2.0 agg. 2025): indice delle sezioni e ricerca per parole, senza nomi di organizzazioni o contatti.
+
 ## 0.0.26 (versionCode 26)
 - Aggiornamenti: all'apertura dell'app compare la notifica (e la finestra) se c'è una versione nuova; il permesso notifiche viene chiesto prima del controllo.
 - Profili: test su PdC, PdA e Ufficio su turni giorno e notte.
