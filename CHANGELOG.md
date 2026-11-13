@@ -1,5 +1,11 @@
 # Novità
 
+## 0.0.26 (versionCode 26)
+- Aggiornamenti: all'apertura dell'app compare la notifica (e la finestra) se c'è una versione nuova; il permesso notifiche viene chiesto prima del controllo.
+- Profili: test su PdC, PdA e Ufficio su turni giorno e notte.
+- Figure professionali (CCNL 2025, art. 72) e assegnazione temporanea con data e nota nelle Impostazioni.
+- Archivio: i nuovi campi figura e assegnazione vengono salvati e ripristinati.
+
 ## 0.0.25 (versionCode 25)
 La 0.0.25 raccoglie anche le novità della 0.0.24, non pubblicata a parte.
 - Impostazioni > Licenze open source: elenco di tutte le librerie incluse, aggiornato a ogni build (file LICENZE.md).

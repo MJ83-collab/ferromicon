@@ -79,6 +79,40 @@ class ImpostazioniActivity : Activity() {
         col.addView(etichetta("Il mio profilo"))
         col.addView(nota("Macchinista o capo treno: decide limiti di prestazione, condotta o scorta e indennità."))
         col.addView(profiloScelto)
+
+        col.addView(etichetta("Figura professionale (per il salario professionale)"))
+        col.addView(nota("Automatica: dipende dal profilo. Scegli la figura solo se la conosci dal cedolino o dall'ufficio del personale."))
+        val figuraScelta = Spinner(this).apply {
+            adapter = ArrayAdapter(this@ImpostazioniActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf("Automatica (dal profilo)") + FigureProfessionali.tutte.map { it.etichetta })
+            setSelection(FigureProfessionali.tutte.indexOfFirst { it.nome == imp.figuraProfessionale } + 1)
+        }
+        col.addView(figuraScelta)
+
+        col.addView(etichetta("Assegnazione temporanea (es. idoneità temporanea)"))
+        col.addView(nota("Se sei assegnato in via provvisoria a un'altra mansione, indicalo qui: l'app lo ricorda."))
+        var assegnazioneDal: LocalDate? = imp.assegnazioneTemporaneaDal
+        val btnAssegnazione = Button(this)
+        fun aggiornaAssegnazione() {
+            btnAssegnazione.text = assegnazioneDal?.let { "Dal ${fmt.format(it)} (tocca per cambiare)" }
+                ?: "Nessuna assegnazione temporanea (tocca per impostare)"
+        }
+        aggiornaAssegnazione()
+        btnAssegnazione.setOnClickListener {
+            val b = assegnazioneDal ?: LocalDate.now()
+            DatePickerDialog(this, { _, y, m, g -> assegnazioneDal = LocalDate.of(y, m + 1, g); aggiornaAssegnazione() },
+                b.year, b.monthValue - 1, b.dayOfMonth).show()
+        }
+        col.addView(btnAssegnazione)
+        val notaAssegnazione = EditText(this).apply {
+            hint = "Nota (es. ufficio, ruolo provvisorio)"; setText(imp.assegnazioneTemporaneaNota)
+        }
+        col.addView(notaAssegnazione)
+        col.addView(Button(this).apply {
+            text = "Annulla assegnazione temporanea"
+            setOnClickListener { assegnazioneDal = null; notaAssegnazione.setText(""); aggiornaAssegnazione() }
+        })
         val cidCampo = EditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER; hint = "Es. 1234567"; setText(imp.cid)
         }
@@ -246,6 +280,9 @@ class ImpostazioniActivity : Activity() {
             setOnClickListener {
                 Archivio.salvaImpostazioni(this@ImpostazioniActivity, imp.copy(
                     profilo = Profilo.values()[profiloScelto.selectedItemPosition],
+                    figuraProfessionale = figuraScelta.selectedItemPosition.let { if (it == 0) "" else FigureProfessionali.tutte[it - 1].nome },
+                    assegnazioneTemporaneaDal = assegnazioneDal,
+                    assegnazioneTemporaneaNota = notaAssegnazione.text.toString().trim(),
                     impianto = if (impiantoScelto.selectedItemPosition == 0) "" else Impianti.tutti[impiantoScelto.selectedItemPosition - 1],
                     cid = cidCampo.text.toString().trim(),
                     nome = nomeCampo.text.toString().trim(),
