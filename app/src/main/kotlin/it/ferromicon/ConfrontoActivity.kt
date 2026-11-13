@@ -6,8 +6,10 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.View
+import android.content.Intent
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -105,6 +107,11 @@ class ConfrontoActivity : Activity() {
             textSize = 15f; setPadding(0, dp(20), 0, dp(8))
             setOnClickListener { startActivity(android.content.Intent(this@ConfrontoActivity, VademecumActivity::class.java)) }
         })
+        col.addView(Button(this).apply {
+            text = "Condividi il confronto"; isAllCaps = false
+            setOnClickListener { condividi() }
+        })
+        caricaPremio()
         setContentView(ScrollView(this).apply { addView(col) })
 
         val aggiorna = object : TextWatcher {
@@ -131,6 +138,7 @@ class ConfrontoActivity : Activity() {
         val imp = dati.impostazioni
         val oggi = LocalDate.now()
         val mese = YearMonth.from(oggi)
+        salvaPremio(mese)
         if (imp.livello == null) {
             risultato.text = "Per calcolare la paga imposta il livello in Impostazioni."
             return
@@ -147,12 +155,8 @@ class ConfrontoActivity : Activity() {
         val serviziMese = dati.servizi.filter { YearMonth.from(it.turno.inizio) == mese }
         val turni = serviziMese.map { it.turnoEffettivo() }
         val oreEffettive = ConfrontoStraordinario.oreTurni(turni, mese)
-        var a = 0L; var b = 0L; var c = 0L; var notte = 0L
-        turni.forEach { t ->
-            val x = Competenze.straordinario(t)
-            a += x.first; b += x.second; c += x.third
-            notte += ConfrontoStraordinario.minutiNotturniStraordinario(t)
-        }
+        val somma = ConfrontoStraordinario.sommaStraordinario(turni)
+        val a = somma.a; val b = somma.b; val c = somma.c; val notte = somma.notturni
 
         val daServizi = fonte.selectedItemPosition == 1
         val oreStra: Double
@@ -218,6 +222,18 @@ class ConfrontoActivity : Activity() {
                     "(${"%.0f".format(r.trattenuteStra / r.lordoStra * 100)}%)")
                 appendLine()
             }
+            val oreMese = turni.sumOf { java.time.Duration.between(it.inizio, it.fine).toMinutes() } / 60.0
+            val limiteMese = LimitiOre.limiteMensile(mese.lengthOfMonth())
+            appendLine("LIMITI DI ORE")
+            appendLine("Ore del mese ${"%.1f".format(oreMese)} di ${"%.1f".format(limiteMese)} (media 38 h × giorni / 7)" +
+                if (oreMese > limiteMese) " → oltre il limite" else "")
+            val settimane = LimitiOre.settimaneOltre(
+                turni.map { it.inizio to it.fine }, LimitiOre.LIMITE_SETTIMANALE_PROGRAMMAZIONE)
+            if (settimane.isEmpty()) appendLine("Nessuna settimana oltre 44 h (programmazione).")
+            settimane.forEach { (lunedi, ore) ->
+                appendLine("Settimana dal ${lunedi.dayOfMonth}/${lunedi.monthValue}: ${"%.1f".format(ore)} h, oltre 44 h")
+            }
+            appendLine()
             if (premioAttivo) {
                 val d = PremioBiglietti.Dati(
                     regolarizzazioni = numeroIn(regolarizzazioni).toInt(),
@@ -233,6 +249,36 @@ class ConfrontoActivity : Activity() {
                     Competenze.euro(Fisco.nettoExtra(imp.redditoAnnuo, tot, anno, p).netto))
             }
         }.trimEnd()
+    }
+
+    /** Gli importi del premio si ricordano per ogni mese, così non vanno reinseriti ogni volta. */
+    private fun chiavePremio(mese: YearMonth, campo: String) = "premio_${mese}_$campo"
+
+    private fun caricaPremio() {
+        val p = getSharedPreferences("confronto", MODE_PRIVATE)
+        val mese = YearMonth.now()
+        regolarizzazioni.setText(p.getString(chiavePremio(mese, "reg"), "0"))
+        senzaEsazione.setText(p.getString(chiavePremio(mese, "senza"), "0"))
+        sovrattassa.setText(p.getString(chiavePremio(mese, "sovr"), "0"))
+        verbali.setText(p.getString(chiavePremio(mese, "verb"), "0"))
+        lungaPercorrenza.isChecked = p.getBoolean(chiavePremio(mese, "lp"), false)
+    }
+
+    private fun salvaPremio(mese: YearMonth) {
+        getSharedPreferences("confronto", MODE_PRIVATE).edit()
+            .putString(chiavePremio(mese, "reg"), regolarizzazioni.text.toString())
+            .putString(chiavePremio(mese, "senza"), senzaEsazione.text.toString())
+            .putString(chiavePremio(mese, "sovr"), sovrattassa.text.toString())
+            .putString(chiavePremio(mese, "verb"), verbali.text.toString())
+            .putBoolean(chiavePremio(mese, "lp"), lungaPercorrenza.isChecked)
+            .apply()
+    }
+
+    private fun condividi() {
+        startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, risultato.text.toString())
+        }, "Condividi il confronto"))
     }
 
     private fun numeroIn(e: EditText): Double =
