@@ -103,13 +103,14 @@ object Aggiornamenti {
                 val codice = o.getLong("versionCode")
                 val nome = o.optString("versionName", codice.toString())
                 p.edit().putLong("ultimo", System.currentTimeMillis()).apply()
-                if (codice > versioneAttuale(app).second) {
+                val installata = versioneAttuale(app).second
+                if (codice > installata) {
                     p.edit().putString("nuova", nome).apply()
                     notificaUnaVolta(app, nome)
                     Esito.Nuova(nome, codice)
                 } else {
                     p.edit().remove("nuova").apply()
-                    Esito.Aggiornato(nome, piuRecente = codice < versioneAttuale(app).second)
+                    Esito.Aggiornato(nome, piuRecente = codice < installata)
                 }
             } catch (e: FileNotFoundException) {
                 Esito.Errore("Non trovo la versione online. Per l'aggiornamento automatico la repo su GitHub " +
@@ -185,7 +186,6 @@ object Aggiornamenti {
             .show()
     }
 
-    /** Controllo all'avvio, con al massimo una richiesta ogni 12 ore. */
     /** Versione nuova da installare, o null se l'app è aggiornata. Usata dal banner della home. */
     fun novitaDisponibile(ctx: Context): String? = prefs(ctx).getString("nuova", null)
 

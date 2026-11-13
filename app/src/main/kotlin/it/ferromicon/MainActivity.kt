@@ -68,6 +68,10 @@ class MainActivity : Activity() {
             finish()
             return
         }
+        // Android 13+: il permesso va chiesto prima del controllo aggiornamenti, altrimenti al primo avvio la notifica non parte
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
         if (savedInstanceState == null) CopiaSicurezza.alAvvio(this)
         if (savedInstanceState == null) CopiaSicurezza.avvisaDanneggiato(this)
@@ -141,10 +145,6 @@ class MainActivity : Activity() {
         costruisciMenu(radiceConMenu)
         setContentView(radiceConMenu)
 
-        // Android 13+: permesso per mostrare i promemoria
-        if (Build.VERSION.SDK_INT >= 33 &&
-            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         Promemoria.programma(this)
         primaConfigurazione()
         segnalaErroreSePresente()
