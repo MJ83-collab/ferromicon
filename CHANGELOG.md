@@ -1,5 +1,11 @@
 # Novità
 
+## Non ancora pubblicata (0.0.25)
+- Impostazioni > Licenze open source: elenco di tutte le librerie incluse, aggiornato a ogni build (file LICENZE.md).
+- Build: la compilazione precedente si ferma quando arriva una nuova modifica sulla stessa branch.
+- Agente: il riepilogo del rotativo non si blocca più se il PDF non riporta date leggibili.
+- Cedolini: nessun crash se il profilo non è impostato nelle Impostazioni.
+
 ## 0.0.24
 - Recupero festività: avviso configurabile (attivo/disattivo, giorni prima della scadenza 1–30, predefinito 7).
 - Copia di sicurezza in una cartella scelta; ripristino dopo aggiornamento con conferma.

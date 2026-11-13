@@ -9,3 +9,6 @@ local.properties
 # chiave di firma: mai nella repo
 *.jks
 *.keystore
+
+# archivi di versioni vecchie (non nella repo)
+ferromicon-*-completa.zip

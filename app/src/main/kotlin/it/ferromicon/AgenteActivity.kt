@@ -121,8 +121,12 @@ class AgenteActivity : Activity() {
         btnInvDal = Button(this).apply {
             setOnClickListener {
                 val b = invDal ?: LocalDate.now()
-                DatePickerDialog(this@AgenteActivity, { _, y, m, g -> invDal = LocalDate.of(y, m + 1, g)
-                    if (invAl == null || invAl!!.isBefore(invDal!!)) invAl = invDal!!.plusDays(6); aggiornaTesti() },
+                DatePickerDialog(this@AgenteActivity, { _, y, m, g ->
+                    val da = LocalDate.of(y, m + 1, g)
+                    invDal = da
+                    if (invAl?.isBefore(da) != false) invAl = da.plusDays(6)
+                    aggiornaTesti()
+                },
                     b.year, b.monthValue - 1, b.dayOfMonth).show()
             }
         }
@@ -171,7 +175,7 @@ class AgenteActivity : Activity() {
                 "Turni: ${giornate.size} giornate di ${giornate.map { it.turno }.distinct().size} turni.")
             append("\n")
             append(if (rot == null) "Rotativo riposi: non caricato (dopo la settimana del PDF i riposi non sono noti)." else
-                "Rotativo riposi: dal ${fmt.format(rot.primo!!)} al ${fmt.format(rot.ultimo!!)}.")
+                "Rotativo riposi: ${rot.primo?.let { p -> rot.ultimo?.let { u -> "dal ${fmt.format(p)} al ${fmt.format(u)}" } } ?: "date non leggibili"}.")
         }
     }
 
@@ -211,7 +215,7 @@ class AgenteActivity : Activity() {
                     val rot = RotativoRiposi.leggi(pagine)
                     if (rot == null) "Non ho riconosciuto un calendario rotativo in questo PDF." else {
                         AgentiArchivio.salvaRotativo(this, rot)
-                        "Rotativo letto: dal ${fmt.format(rot.primo!!)} al ${fmt.format(rot.ultimo!!)}."
+                        "Rotativo letto: ${rot.primo?.let { p -> rot.ultimo?.let { u -> "dal ${fmt.format(p)} al ${fmt.format(u)}" } } ?: "date non leggibili"}."
                     }
                 } else if (requestCode == RICHIESTA_CALENDARIO) {
                     val pagine = ArrayList<List<Pezzo>>()

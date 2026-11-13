@@ -79,7 +79,7 @@ object PeriodiFerie {
             d = d.plusDays(1)
         }
         val primoRiposo: LocalDate = inizio ?: return emptySet()
-        var fine: LocalDate = ultimoNelPeriodo!!
+        var fine: LocalDate = ultimoNelPeriodo ?: return emptySet()
         if (blocchi == 1) {
             // Un solo riposo nel periodo: si prosegue fino alla fine del riposo successivo.
             var x = fine.plusDays(1)
