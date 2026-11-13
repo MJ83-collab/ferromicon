@@ -38,6 +38,10 @@
             android:name=".CercaCidActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".LicenzeActivity"
+            android:exported="false"
+            android:parentActivityName=".ImpostazioniActivity" />
 
         <activity
             android:name=".AnnoActivity"

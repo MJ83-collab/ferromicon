@@ -276,6 +276,11 @@ class ImpostazioniActivity : Activity() {
             }
         })
 
+        col.addView(Button(this).apply {
+            text = "Licenze open source"
+            setOnClickListener { startActivity(Intent(this@ImpostazioniActivity, LicenzeActivity::class.java)) }
+        })
+
         setContentView(ScrollView(this).apply { addView(col) })
     }
 
