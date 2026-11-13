@@ -1,5 +1,12 @@
 # Novità
 
+## 0.0.28 (versionCode 28)
+- Confronto: il premio biglietti del mese si ricorda, senza reinserirlo ogni volta.
+- Confronto: controllo del limite mensile di ore (giorni × 38 / 7) e delle settimane oltre 44 h.
+- Confronto: pulsante per condividere il testo del confronto.
+- Vademecum: le parole cercate sono evidenziate nei risultati.
+- Assenza dalla residenza: tariffe CCNL 2025 per estero e accompagnamento notte (non ancora collegate al mese).
+
 ## 0.0.27 (versionCode 27)
 - Straordinario → Confronto turno e straordinario: scegli profilo, valore dell'ora (160 ore fisse o ore effettive), fonte delle ore e le voci da mostrare (turno, straordinario, ora, impegno, notturne, trattenute, premio biglietti).
 - Premio biglietti del capotreno (voci 1A28, 1A86, 1A87, 1A99 e 7% lunga percorrenza), con importi inseriti a mano.

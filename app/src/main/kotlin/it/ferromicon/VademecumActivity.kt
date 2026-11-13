@@ -1,7 +1,11 @@
 package it.ferromicon
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spanned
+import android.text.SpannableString
+import android.text.style.BackgroundColorSpan
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -68,9 +72,24 @@ class VademecumActivity : Activity() {
                 textSize = 13f; setPadding(0, dp(8), 0, dp(8))
             })
             trovate.take(200).forEach { r ->
-                corpo.addView(TextView(this).apply { text = r; textSize = 14f; setPadding(0, dp(4), 0, dp(4)) })
+                corpo.addView(TextView(this).apply {
+                    text = evidenzia(r, parola); textSize = 14f; setPadding(0, dp(4), 0, dp(4))
+                })
             }
         }
+    }
+
+    /** Sfondo giallo sulle occorrenze della parola cercata, senza distinzione tra maiuscole e minuscole. */
+    private fun evidenzia(testo: String, parola: String): CharSequence {
+        val s = SpannableString(testo)
+        var da = 0
+        while (true) {
+            val i = testo.indexOf(parola, da, ignoreCase = true)
+            if (i < 0) break
+            s.setSpan(BackgroundColorSpan(Color.YELLOW), i, i + parola.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            da = i + parola.length
+        }
+        return s
     }
 
     private fun apriSezione(s: Sezione) {

@@ -119,6 +119,21 @@ object ConfrontoStraordinario {
         return if (tot == 0L) 0.0 else (a * 0.18 + b * 0.35 + c * 0.50) / tot
     }
 
+    /** Minuti di straordinario per maggiorazione (a: +18%, b: +35%, c: +50%) e minuti notturni, sommati sui turni. */
+    data class Somma(val a: Long, val b: Long, val c: Long, val notturni: Long) {
+        val minuti: Long get() = a + b + c
+    }
+
+    fun sommaStraordinario(turni: List<Turno>): Somma {
+        var a = 0L; var b = 0L; var c = 0L; var notte = 0L
+        turni.forEach { t ->
+            val x = Competenze.straordinario(t)
+            a += x.first; b += x.second; c += x.third
+            notte += minutiNotturniStraordinario(t)
+        }
+        return Somma(a, b, c, notte)
+    }
+
     /** Ore lavorate di un elenco di turni (durata inizio → fine), in ore decimali. */
     fun oreTurni(turni: List<Turno>, mese: YearMonth): Double =
         turni.filter { YearMonth.from(it.inizio) == mese }
