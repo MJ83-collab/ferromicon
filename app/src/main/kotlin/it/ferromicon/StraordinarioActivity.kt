@@ -56,6 +56,11 @@ class StraordinarioActivity : Activity() {
         col.addView(tipo)
         risultato = TextView(this).apply { textSize = 16f; setPadding(0, dp(16), 0, 0) }
         col.addView(risultato)
+        col.addView(TextView(this).apply {
+            text = "Confronto turno e straordinario →"
+            textSize = 15f; setPadding(0, dp(16), 0, dp(8))
+            setOnClickListener { startActivity(android.content.Intent(this@StraordinarioActivity, ConfrontoActivity::class.java)) }
+        })
         setContentView(ScrollView(this).apply { addView(col) })
 
         ore.addTextChangedListener(object : TextWatcher {
