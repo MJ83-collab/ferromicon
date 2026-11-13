@@ -42,35 +42,6 @@ object PeriodiFerie {
         return estivi(anno).firstOrNull { it.nome == "Estivo $l" }
     }
 
-    /**
-     * Periodi invernali della stagione che inizia nell'anno [stagione] (2026 = 2026/27).
-     * Stessa lettera del periodo estivo. Natale, Immacolata, Epifania, 25 aprile e Capodanno hanno date fisse;
-     * la Pasqua va da tre giorni prima a tre giorni dopo la domenica di Pasqua (2027: 25/03–31/03).
-     */
-    fun invernali(stagione: Int): List<PeriodoFerie> {
-        val pasqua = pasqua(stagione + 1)
-        return listOf(
-            PeriodoFerie("Invernale A (Natale)", LocalDate.of(stagione, 12, 21), LocalDate.of(stagione, 12, 27)),
-            PeriodoFerie("Invernale B (Pasqua)", pasqua.minusDays(3), pasqua.plusDays(3)),
-            PeriodoFerie("Invernale C (Epifania)", LocalDate.of(stagione + 1, 1, 4), LocalDate.of(stagione + 1, 1, 10)),
-            PeriodoFerie("Invernale D (25 aprile)", LocalDate.of(stagione + 1, 4, 25), LocalDate.of(stagione + 1, 5, 1)),
-            PeriodoFerie("Invernale E (Immacolata)", LocalDate.of(stagione, 12, 5), LocalDate.of(stagione, 12, 11)),
-            PeriodoFerie("Invernale F (Capodanno)", LocalDate.of(stagione, 12, 28), LocalDate.of(stagione + 1, 1, 3))
-        )
-    }
-
-    /** Periodo invernale della stessa lettera del periodo estivo ("Estivo D" 2026 → "Invernale D" 2026/27). */
-    fun invernalePer(estivo: PeriodoFerie): PeriodoFerie? {
-        val lettera = estivo.nome.substringAfter("Estivo ").trim()
-        return invernali(estivo.dal.year).firstOrNull { it.nome.startsWith("Invernale $lettera ") }
-    }
-
-    /** Periodo invernale della stagione [stagione] per la lettera base scelta dall'utente. */
-    fun invernalePerAnno(letteraBase: String, stagione: Int): PeriodoFerie? {
-        val l = letteraPerAnno(letteraBase, ANNO_BASE, stagione)
-        return invernali(stagione).firstOrNull { it.nome.startsWith("Invernale $l ") }
-    }
-
     /** Pasqua cattolica (algoritmo di Meeus/Jones/Butcher). */
     fun pasqua(anno: Int): LocalDate {
         val a = anno % 19; val b = anno / 100; val c = anno % 100

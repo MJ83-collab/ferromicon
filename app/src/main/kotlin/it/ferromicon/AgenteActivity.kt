@@ -269,8 +269,11 @@ class AgenteActivity : Activity() {
                 }
             }
             for (stagione in (da.year - 1)..fino.year) {
-                PeriodiFerie.invernalePerAnno(base, stagione)?.let {
-                    if (!it.al.isBefore(da) && !it.dal.isAfter(fino)) lista += it
+                // Date invernali da FerieInvernali: senza tabella dell'anno non compare nulla.
+                val lettera = FerieInvernali.letteraPerAnno(base.first(), stagione)
+                FerieInvernali.invernale(lettera, stagione)?.let {
+                    val p = PeriodoFerie("Invernale ${it.lettera} (${it.nome})", it.da, it.a)
+                    if (!p.al.isBefore(da) && !p.dal.isAfter(fino)) lista += p
                 }
             }
         } else {

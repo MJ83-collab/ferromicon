@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
+import android.view.WindowInsets
 import android.widget.Button
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -33,6 +35,13 @@ class BenvenutoActivity : Activity() {
             setPadding(dp(20), dp(24), dp(20), dp(24))
         }
         val scroll = ScrollView(this).apply { addView(colonna) }
+        // Come nelle altre schermate: il contenuto parte sotto la barra di stato, senza tagliare la prima riga.
+        scroll.setOnApplyWindowInsetsListener { v, insets ->
+            val alto = if (Build.VERSION.SDK_INT >= 30) insets.getInsets(WindowInsets.Type.statusBars()).top
+                else @Suppress("DEPRECATION") insets.systemWindowInsetTop
+            v.setPadding(0, alto, 0, 0)
+            insets
+        }
         setContentView(scroll)
 
         if (info) {

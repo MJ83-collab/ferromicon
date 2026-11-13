@@ -1,5 +1,24 @@
 # Novità
 
+## 0.0.24
+- Recupero festività: avviso configurabile (attivo/disattivo, giorni prima della scadenza 1–30, predefinito 7).
+- Copia di sicurezza in una cartella scelta; ripristino dopo aggiornamento con conferma.
+- Primo avvio in tre passi: CID, nome e cognome, impianto e qualifica; l'app si adatta alla qualifica.
+- Cerca CID: importa l'elenco dal telefono e conferma i tuoi dati.
+- Cronologia: ricerca per data gg/mm; report PDF personalizzato per qualifica.
+- Orari: ore inserite in formato HHmm; etichette accessibili sui pulsanti del mese.
+- Corretti: duplicazione riga, dialogo di annullamento cancellazione, controlli al salvataggio.
+
+Versione 0.0.24 (versionCode 24).
+
+## 0.0.23
+- Primo avvio: la pagina di benvenuto non tronca più la prima riga sotto la barra di stato.
+- Schermata principale: menu laterale (☰) con tutte le voci della scheda Strumenti.
+- Servizio: «Copia in altra data» dal menu a pressione lunga, scegliendo il giorno di arrivo.
+- Periodi invernali: un'unica fonte per le date, la tabella di ogni anno. Senza tabella non compaiono date, anche nel calendario agente.
+
+Versione 0.0.23 (versionCode 23).
+
 ## 0.0.22
 - Aggiornamenti: il controllo di una versione nuova parte a ogni apertura dell'app, senza attendere le 12 ore.
 - Primo avvio: si sceglie anche «Personale di ufficio»; la lettura del cedolino passa alla schermata successiva.
