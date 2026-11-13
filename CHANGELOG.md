@@ -1,6 +1,7 @@
 # Novità
 
-## Non ancora pubblicata (0.0.25)
+## 0.0.25 (versionCode 25)
+La 0.0.25 raccoglie anche le novità della 0.0.24, non pubblicata a parte.
 - Impostazioni > Licenze open source: elenco di tutte le librerie incluse, aggiornato a ogni build (file LICENZE.md).
 - Build: la compilazione precedente si ferma quando arriva una nuova modifica sulla stessa branch.
 - Agente: il riepilogo del rotativo non si blocca più se il PDF non riporta date leggibili.
@@ -15,7 +16,7 @@
 - Orari: ore inserite in formato HHmm; etichette accessibili sui pulsanti del mese.
 - Corretti: duplicazione riga, dialogo di annullamento cancellazione, controlli al salvataggio.
 
-Versione 0.0.24 (versionCode 24).
+Versione 0.0.24 (versionCode 24, mai pubblicata a parte: inclusa nella 0.0.25).
 
 ## 0.0.23
 - Primo avvio: la pagina di benvenuto non tronca più la prima riga sotto la barra di stato.
