@@ -1,6 +1,7 @@
 package it.ferromicon
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -45,9 +46,29 @@ class ImpostazioniActivity : Activity() {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
             hint = "Nome e cognome"; setText(imp.nome)
         }
+        val impiantoScelto = Spinner(this).apply {
+            adapter = ArrayAdapter(this@ImpostazioniActivity,
+                android.R.layout.simple_spinner_dropdown_item, listOf("Non impostato") + Impianti.tutti)
+            setSelection(Impianti.tutti.indexOf(imp.impianto).let { if (it < 0) 0 else it + 1 })
+        }
         col.addView(etichetta("Il mio nome"))
         col.addView(nota("Dà il nome al tuo profilo: compare nell'agenda e nei calendari che esporti."))
         col.addView(nomeCampo)
+        col.addView(etichetta("Impianto di appartenenza")); col.addView(impiantoScelto)
+        if (imp.cid.isNotBlank()) {
+            col.addView(nota("CID ${imp.cid}" + if (imp.impianto.isNotBlank()) " · ${imp.impianto}" else ""))
+            col.addView(Button(this).apply {
+                text = "Controlla CID e impianto"
+                setOnClickListener {
+                    AlertDialog.Builder(this@ImpostazioniActivity)
+                        .setTitle("CID e impianto sono giusti?")
+                        .setMessage("CID ${imp.cid}" + if (imp.impianto.isNotBlank()) "\nImpianto attuale: ${imp.impianto}" else "")
+                        .setPositiveButton("Sì, è giusto", null)
+                        .setNegativeButton("Modifica impianto") { _, _ -> impiantoScelto.performClick() }
+                        .show()
+                }
+            })
+        }
         col.addView(android.widget.Button(this).apply {
             text = "Informazioni e responsabilità"
             setOnClickListener {
@@ -129,6 +150,29 @@ class ImpostazioniActivity : Activity() {
         }
         col.addView(etichetta("Promemoria prima del servizio")); col.addView(promemoria)
 
+        val avvisoRecupero = CheckBox(this).apply {
+            text = "Avviso per il recupero festività"
+            isChecked = imp.avvisoRecuperoAttivo
+        }
+        val giorniRecupero = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setText(imp.giorniAvvisoRecupero.toString())
+            hint = "7"
+        }
+        col.addView(etichetta("Recupero festività"))
+        col.addView(nota("Ti avvisa ogni mattina alle 9 quando la scadenza più vicina è entro il numero di giorni indicato."))
+        col.addView(avvisoRecupero)
+        col.addView(TextView(this).apply { text = "Giorni prima della scadenza (1–30)"; textSize = 12f })
+        col.addView(giorniRecupero)
+
+        col.addView(etichetta("Copia di sicurezza"))
+        col.addView(nota("Alla prima apertura di una nuova versione salva i dati in questa cartella. " +
+            "Dopo una reinstallazione propone il ripristino dalla copia."))
+        col.addView(Button(this).apply {
+            text = if (CopiaSicurezza.cartella(this@ImpostazioniActivity) == null) "Scegli cartella" else "Cambia cartella"
+            setOnClickListener { CopiaSicurezza.scegliCartella(this@ImpostazioniActivity) }
+        })
+
         // Aspetto: chiaro, scuro o come il telefono (la scelta manuale richiede Android 12 o successivo)
         col.addView(etichetta("Aspetto"))
         if (android.os.Build.VERSION.SDK_INT >= 31) {
@@ -202,6 +246,7 @@ class ImpostazioniActivity : Activity() {
             setOnClickListener {
                 Archivio.salvaImpostazioni(this@ImpostazioniActivity, imp.copy(
                     profilo = Profilo.values()[profiloScelto.selectedItemPosition],
+                    impianto = if (impiantoScelto.selectedItemPosition == 0) "" else Impianti.tutti[impiantoScelto.selectedItemPosition - 1],
                     cid = cidCampo.text.toString().trim(),
                     nome = nomeCampo.text.toString().trim(),
                     dataAssunzione = assunzione,
@@ -213,6 +258,8 @@ class ImpostazioniActivity : Activity() {
                     parentaliSpettanti = parentali.text.toString().toIntOrNull() ?: 0,
                     permessiSpettanti = permessiSpettantiCampo.text.toString().toIntOrNull() ?: 0,
                     promemoriaMinuti = opzioniPromemoria[promemoria.selectedItemPosition],
+                    avvisoRecuperoAttivo = avvisoRecupero.isChecked,
+                    giorniAvvisoRecupero = giorniRecupero.text.toString().toIntOrNull()?.coerceIn(1, 30) ?: 7,
                     redditoAnnuo = reddito.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0,
                     inpsPct = inpsPct.text.toString().replace(',', '.').toDoubleOrNull() ?: 9.19,
                     addComunalePct = comunale.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.8,
@@ -229,6 +276,11 @@ class ImpostazioniActivity : Activity() {
             }
         })
 
+        col.addView(Button(this).apply {
+            text = "Licenze open source"
+            setOnClickListener { startActivity(Intent(this@ImpostazioniActivity, LicenzeActivity::class.java)) }
+        })
+
         setContentView(ScrollView(this).apply { addView(col) })
     }
 
@@ -237,6 +289,14 @@ class ImpostazioniActivity : Activity() {
     private fun oreAMinuti(testo: String, predefinito: Int): Int =
         testo.replace(',', '.').toDoubleOrNull()?.let { Math.round(it * 60).toInt() }?.takeIf { it in 60..24 * 60 }
             ?: predefinito
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data ?: return
+        if (resultCode == RESULT_OK && requestCode == CopiaSicurezza.RICHIESTA_CARTELLA) {
+            CopiaSicurezza.dopoSceltaCartella(this, uri)
+        }
+    }
 
     private fun etichetta(t: String) = TextView(this).apply {
         text = t; textSize = 16f; setPadding(0, dp(16), 0, 0)

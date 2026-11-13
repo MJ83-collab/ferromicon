@@ -179,11 +179,7 @@ class CedoliniActivity : Activity() {
         t.appendLine()
         t.appendLine("Voci:")
         c.voci.forEach { v ->
-            val valore = when {
-                v.competenza != null -> "+" + euro(v.competenza!!)
-                v.trattenuta != null -> "−" + euro(v.trattenuta!!)
-                else -> ""
-            }
+            val valore = v.competenza?.let { "+" + euro(it) } ?: v.trattenuta?.let { "−" + euro(it) } ?: ""
             val parametro = v.param?.let { " (${ore(it)})" } ?: ""
             t.appendLine("${v.codice} ${v.descrizione}$parametro  $valore".trim())
         }
@@ -229,7 +225,7 @@ class CedoliniActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("Dati letti dal cedolino")
             .setMessage(righe.joinToString("\n") { "• $it" } +
-                (if (cambia) "\n\nAttenzione: ora nelle Impostazioni hai ${attuale.profilo!!.etichetta}." else "") +
+                (if (cambia) "\n\nAttenzione: ora nelle Impostazioni hai ${attuale.profilo?.etichetta.orEmpty()}." else "") +
                 "\n\nImposto regole, limiti e parametri di conseguenza? Puoi cambiarli quando vuoi dalle Impostazioni.")
             .setPositiveButton("Imposta") { _, _ ->
                 val nuove = a.applica(Archivio.caricaTutto(this).impostazioni)

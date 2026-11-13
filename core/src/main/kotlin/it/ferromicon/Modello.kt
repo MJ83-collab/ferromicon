@@ -79,7 +79,11 @@ data class RigaTreno(
     val arrivo: LocalDateTime,
     val tipo: TipoRiga = TipoRiga.CONDOTTA,
     val partenzaReale: LocalDateTime? = null,
-    val arrivoReale: LocalDateTime? = null
+    val arrivoReale: LocalDateTime? = null,
+    /** Collegamento con la riga precedente: "" nessuno, "O" orario, "S" stazione, "OS" entrambi. */
+    val collegamento: String = "",
+    /** true se la riga è una vettura (movimento non commerciale), false se è un treno. */
+    val vettura: Boolean = false,
 ) {
     val inizioEffettivo: LocalDateTime get() = partenzaReale ?: partenza
     val fineEffettiva: LocalDateTime get() = arrivoReale ?: arrivo
@@ -87,6 +91,28 @@ data class RigaTreno(
 
 /** Calcoli sulle righe di un servizio. */
 object Righe {
+
+    /**
+     * Applica i collegamenti tra righe consecutive (ordinate per partenza).
+     * "O": il ritardo all'arrivo della riga precedente passa alla riga collegata (orari reali).
+     * "S": la stazione di partenza diventa quella di arrivo della riga precedente.
+     */
+    fun applicaCollegamenti(righe: List<RigaTreno>): List<RigaTreno> {
+        val out = righe.sortedBy { it.partenza }.toMutableList()
+        for (i in 1 until out.size) {
+            val c = out[i].collegamento
+            if (c.isEmpty()) continue
+            val prec = out[i - 1]
+            var r = out[i]
+            if (c.contains('O') && prec.arrivoReale != null) {
+                val ritardo = Duration.between(prec.arrivo, prec.arrivoReale)
+                r = r.copy(partenzaReale = r.partenza.plus(ritardo), arrivoReale = r.arrivo.plus(ritardo))
+            }
+            if (c.contains('S') && prec.a.isNotBlank()) r = r.copy(da = prec.a)
+            out[i] = r
+        }
+        return out
+    }
 
     /** Soste inferiori a 15 minuti tra due treni contano come condotta continuativa (Altarail art. 17.7.1). */
     const val SOSTA_MINIMA = 15L
@@ -193,6 +219,10 @@ data class Impostazioni(
     val limitiOrario: LimitiOrario? = null,
     /** Scelte manuali sul recupero delle festività: vero = recuperabile, falso = non recuperabile. */
     val festiviForzati: Map<LocalDate, Boolean> = emptyMap(),
+    /** Avviso per il recupero festività attivo o no. */
+    val avvisoRecuperoAttivo: Boolean = true,
+    /** Giorni prima della scadenza più vicina in cui inizia l'avviso per il recupero festività (1–30). */
+    val giorniAvvisoRecupero: Int = 7,
     /** Reddito imponibile annuo (dal CU o dal cedolino di dicembre), per stimare il netto; 0 = non impostato. */
     val redditoAnnuo: Double = 0.0,
     /** Contributi INPS a carico del lavoratore, in %. */
@@ -203,12 +233,22 @@ data class Impostazioni(
     val profilo: Profilo? = null,
     /** CID (matricola) dell'utente: serve a trovare il suo calendario nei PDF dell'impianto. */
     val cid: String = "",
+    /** Impianto di appartenenza, scelto da [Impianti.tutti]; vuoto = non impostato. */
+    val impianto: String = "",
     /** Nome dell'utente: dà il nome al suo profilo (agenda, calendari, esportazioni). */
     val nome: String = "",
     /** Giorni di congedo parentale spettanti nell'anno (0 = non impostato). */
     val parentaliSpettanti: Int = 0,
     /** Giorni di permesso (ex festività e altri permessi) spettanti nell'anno; 0 = non impostato. */
     val permessiSpettanti: Int = 0,
+    /** Linee su cui il macchinista è abilitato (codici o nomi scelti dall'utente). */
+    val abilitazioniLinee: List<String> = emptyList(),
+    /** Tipi di treno (materiale rotabile) che il macchinista è abilitato a guidare. */
+    val abilitazioniMacchine: List<String> = emptyList(),
+    /** Ultimo viaggio inserito a mano: chiave "L:S5" per una linea, "M:TSR" per un tipo di treno. */
+    val ultimoViaggio: Map<String, LocalDate> = emptyMap(),
+    /** Giorni senza viaggi oltre i quali l'abilitazione va rinnovata (avviso). */
+    val giorniSogliaAbilitazioni: Int = 90,
 ) {
     /** Profilo da usare per i nuovi servizi. */
     val profiloAttivo: Profilo get() = profilo ?: Profilo.MACCHINISTA

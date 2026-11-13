@@ -40,6 +40,7 @@ class ServizioActivity : Activity() {
 
     private val fmtData = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ITALIAN)
     private val fmtOra = DateTimeFormatter.ofPattern("HH:mm")
+    private val fmtNota = DateTimeFormatter.ofPattern("dd/MM HH:mm")
 
     private lateinit var profilo: Spinner
     private lateinit var btnData: Button
@@ -156,12 +157,14 @@ class ServizioActivity : Activity() {
 
         materiale = EditText(this).apply { hint = "es. Caravaggio, TSR, Coradia" }
         col.addView(etichetta("Materiale rotabile")); col.addView(materiale)
+        col.addView(Button(this).apply { text = "Copia dal servizio precedente"; setOnClickListener { copiaMaterialePrecedente() } })
         secondoAgente = EditText(this).apply { hint = "Nome del collega" }
         etichettaCollega = etichetta("Capo treno")
         col.addView(etichettaCollega); col.addView(secondoAgente)
 
         note = EditText(this).apply { hint = "Note" }
         col.addView(etichetta("Note")); col.addView(note)
+        col.addView(Button(this).apply { text = "Aggiungi nota"; setOnClickListener { aggiungiNota() } })
 
         val bottoni = LinearLayout(this)
         bottoni.addView(Button(this).apply { text = "Verifica"; setOnClickListener { verifica() } },
@@ -239,18 +242,50 @@ class ServizioActivity : Activity() {
             materiale = materiale.text.toString().trim(),
             secondoAgente = secondoAgente.text.toString().trim(),
             origineTurno = esistente?.origineTurno ?: "",
-            righe = righe.sortedBy { it.partenza }
+            righe = Righe.applicaCollegamenti(righe.toList())
         )
         return servizio.conRigheApplicate()
     }
 
     private fun inizioServizio() = LocalDateTime.of(data, oraInizio)
 
+    /** Ricopia il materiale rotabile dal servizio più recente che inizia prima di questo. */
+    private fun copiaMaterialePrecedente() {
+        val inizio = inizioServizio()
+        val prec = Archivio.caricaTutto(this).servizi
+            .filter { it.id != esistente?.id && it.materiale.isNotBlank() && it.turno.inizio.isBefore(inizio) }
+            .maxByOrNull { it.turno.inizio }
+        if (prec == null) {
+            Toast.makeText(this, "Nessun servizio precedente con materiale", Toast.LENGTH_SHORT).show()
+        } else {
+            materiale.setText(prec.materiale)
+        }
+    }
+
+    /** Aggiunge una nota in fondo, con data e ora di quando è stata scritta: le note si impilano. */
+    private fun aggiungiNota() {
+        val campo = EditText(this).apply { hint = "Testo della nota" }
+        AlertDialog.Builder(this)
+            .setTitle("Nuova nota")
+            .setView(campo)
+            .setPositiveButton("Aggiungi") { _, _ ->
+                val testo = campo.text.toString().trim()
+                if (testo.isNotEmpty()) {
+                    val riga = "${LocalDateTime.now().format(fmtNota)}  $testo"
+                    val precedente = note.text.toString().trim()
+                    note.setText(if (precedente.isEmpty()) riga else "$precedente\n$riga")
+                }
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
+    }
+
     // ---------- righe treno ----------
 
     private fun mostraRighe() {
         elencoRighe.removeAllViews()
-        righe.sortBy { it.partenza }
+        val applicate = Righe.applicaCollegamenti(righe.toList())
+        righe.clear(); righe.addAll(applicate)
         righe.forEachIndexed { i, r ->
             val ritardo = r.arrivoReale?.let { java.time.Duration.between(r.arrivo, it).toMinutes() }
             val tratta = listOf(r.da, r.a).filter { it.isNotBlank() }.joinToString(" → ")
@@ -258,7 +293,10 @@ class ServizioActivity : Activity() {
                 text = buildString {
                     append(if (r.numero.isBlank()) r.tipo.etichetta else "${r.numero} · ${r.tipo.etichetta.lowercase()}")
                     append("  ${fmtOra.format(r.partenza)}–${fmtOra.format(r.arrivo)}")
+                    if (r.arrivo.toLocalDate().isAfter(r.partenza.toLocalDate())) append(" (+1)")
                     if (tratta.isNotEmpty()) append("\n    $tratta")
+                    if (r.collegamento.isNotEmpty()) append("  [${r.collegamento}]")
+                    if (r.vettura) append("  [V]")
                     if (ritardo != null) append(when {
                         ritardo > 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} (+$ritardo')"
                         ritardo < 0 -> "\n    arrivo reale ${fmtOra.format(r.arrivoReale)} ($ritardo')"
@@ -271,11 +309,40 @@ class ServizioActivity : Activity() {
                 setOnLongClickListener {
                     AlertDialog.Builder(this@ServizioActivity)
                         .setMessage("Eliminare questa riga?")
-                        .setPositiveButton("Elimina") { _, _ -> righe.removeAt(i); mostraRighe() }
+                        .setPositiveButton("Elimina") { _, _ ->
+                            val eliminata = righe.removeAt(i)
+                            mostraRighe()
+                            AlertDialog.Builder(this@ServizioActivity)
+                                .setMessage("Riga eliminata.")
+                                .setPositiveButton("Annulla") { _, _ ->
+                                    righe.add(i.coerceAtMost(righe.size), eliminata)
+                                    mostraRighe()
+                                }
+                                .setNegativeButton("OK", null)
+                                .show()
+                        }
                         .setNegativeButton("Annulla", null)
                         .show()
                     true
                 }
+            })
+            elencoRighe.addView(LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                addView(Button(this@ServizioActivity).apply {
+                    text = if (r.vettura) "V · vettura" else "T · treno"
+                    setOnClickListener { righe[i] = righe[i].copy(vettura = !r.vettura); mostraRighe() }
+                })
+                addView(Button(this@ServizioActivity).apply {
+                    text = "Duplica"
+                    setOnClickListener {
+                        righe.add(i + 1, r.copy(partenzaReale = null, arrivoReale = null, collegamento = ""))
+                        mostraRighe()
+                    }
+                })
+                if (i > 0) addView(Button(this@ServizioActivity).apply {
+                    text = "Collega alla precedente: " + etichettaCollegamento(r.collegamento)
+                    setOnClickListener { scegliCollegamento(i) }
+                })
             })
         }
         aggiornaCondottaDaRighe()
@@ -293,6 +360,26 @@ class ServizioActivity : Activity() {
         condotta.setText(oreMinuti(s.turno.minutiCondotta).ifEmpty { "0:00" })
         consecutiva.setText(oreMinuti(s.turno.maxCondottaConsecutiva).ifEmpty { "0:00" })
         notaCondotta.text = "Calcolata dalle righe (con gli orari reali, se inseriti)."
+    }
+
+    private fun etichettaCollegamento(c: String) = when (c) {
+        "O" -> "orario"
+        "S" -> "stazione"
+        "OS" -> "orario e stazione"
+        else -> "nessuno"
+    }
+
+    /** Sceglie come la riga [i] è collegata a quella precedente. */
+    private fun scegliCollegamento(i: Int) {
+        val valori = listOf("", "O", "S", "OS")
+        AlertDialog.Builder(this)
+            .setTitle("Collegamento alla riga precedente")
+            .setItems(valori.map { etichettaCollegamento(it).replaceFirstChar { c -> c.uppercase() } }.toTypedArray()) { _, scelta ->
+                righe[i] = righe[i].copy(collegamento = valori[scelta])
+                mostraRighe()
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     /** Dialogo di inserimento o modifica di una riga; [indice] null per una riga nuova. */
@@ -323,8 +410,7 @@ class ServizioActivity : Activity() {
             btnArrivoReale.text = "Arrivo reale " + (arrivoReale?.let { fmtOra.format(it) } ?: "—")
         }
         fun ora(iniziale: LocalTime, imposta: (LocalTime) -> Unit) =
-            TimePickerDialog(this, { _, h, m -> imposta(LocalTime.of(h, m)); aggiorna() },
-                iniziale.hour, iniziale.minute, true).show()
+            chiediOra(iniziale) { imposta(it); aggiorna() }
         btnPartenza.setOnClickListener { ora(partenza) { partenza = it } }
         btnArrivo.setOnClickListener { ora(arrivo) { arrivo = it } }
         btnPartenzaReale.setOnClickListener { ora(partenzaReale ?: partenza) { partenzaReale = it } }
@@ -372,7 +458,9 @@ class ServizioActivity : Activity() {
                     partenza = p, arrivo = arr,
                     tipo = TipoRiga.values()[tipo.selectedItemPosition],
                     partenzaReale = reale(partenzaReale, p),
-                    arrivoReale = reale(arrivoReale, arr)
+                    arrivoReale = reale(arrivoReale, arr),
+                    collegamento = esistente?.collegamento ?: "",
+                    vettura = esistente?.vettura ?: false
                 )
                 if (indice == null) righe += nuova else righe[indice] = nuova
                 mostraRighe()
@@ -518,6 +606,30 @@ class ServizioActivity : Activity() {
     }
 
     private fun salva() {
+        val avvisi = mutableListOf<String>()
+        val incoerenti = righe.count { r ->
+            r.arrivo.isBefore(r.partenza) ||
+                (r.arrivoReale != null && r.partenzaReale != null && r.arrivoReale!!.isBefore(r.partenzaReale!!))
+        }
+        if (incoerenti > 0) avvisi += "$incoerenti riga/e hanno l'arrivo prima della partenza, oppure l'arrivo reale prima della partenza reale."
+        val nuovo = costruisci()
+        val sovrapposti = Archivio.carica(this).count { altro ->
+            altro.id != nuovo.id && altro.turno.inizio.isBefore(nuovo.turno.fine) && nuovo.turno.inizio.isBefore(altro.turno.fine)
+        }
+        if (sovrapposti > 0) avvisi += "Il servizio si sovrappone a $sovrapposti altro/i servizio/i già salvato/i."
+        if (avvisi.isNotEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("Da controllare")
+                .setMessage(avvisi.joinToString("\n\n"))
+                .setPositiveButton("Salva comunque") { _, _ -> salvaDefinitivo() }
+                .setNegativeButton("Controllo", null)
+                .show()
+            return
+        }
+        salvaDefinitivo()
+    }
+
+    private fun salvaDefinitivo() {
         val nuovo = costruisci()
         Archivio.aggiornaOInserisci(this, nuovo)
         getPreferences(MODE_PRIVATE).edit().putInt(PREF_PROFILO, nuovo.turno.profilo.ordinal).apply()
@@ -556,10 +668,30 @@ class ServizioActivity : Activity() {
 
     private fun scegliOra(inizio: Boolean) {
         val ora = if (inizio) oraInizio else oraFine
-        TimePickerDialog(this, { _, h, m ->
-            if (inizio) oraInizio = LocalTime.of(h, m) else oraFine = LocalTime.of(h, m)
+        chiediOra(ora) {
+            if (inizio) oraInizio = it else oraFine = it
             aggiornaBottoni()
-        }, ora.hour, ora.minute, true).show()
+        }
+    }
+
+    /** Orario digitato come HHmm (0840) o HH:mm; chiede di nuovo se il valore non è valido. */
+    private fun chiediOra(iniziale: LocalTime, alOk: (LocalTime) -> Unit) {
+        val campo = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = "HHmm, es. 0840"
+            setText(OraInput.formato(iniziale))
+            setSelectAllOnFocus(true)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Ora")
+            .setView(campo.apply { setPadding(dp(20), dp(8), dp(20), 0) })
+            .setPositiveButton("OK") { _, _ ->
+                val nuova = OraInput.parse(campo.text.toString())
+                if (nuova == null) Toast.makeText(this, "Ora non valida: usa HHmm, es. 0840", Toast.LENGTH_LONG).show()
+                else alOk(nuova)
+            }
+            .setNegativeButton("Annulla", null)
+            .show()
     }
 
     private fun aggiornaBottoni() {

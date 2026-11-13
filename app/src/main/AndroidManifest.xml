@@ -35,6 +35,15 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".CercaCidActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".LicenzeActivity"
+            android:exported="false"
+            android:parentActivityName=".ImpostazioniActivity" />
+
+        <activity
             android:name=".AnnoActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
@@ -111,6 +120,16 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".AbilitazioniActivity"
+            android:exported="false"
+            android:label="Abilitazioni"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".CronologiaTrenoActivity"
+            android:exported="false"
+            android:label="Cerca treno"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".ImpostazioniActivity"
             android:exported="false"

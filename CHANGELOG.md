@@ -1,5 +1,23 @@
 # Novità
 
+## 0.0.25 (versionCode 25)
+La 0.0.25 raccoglie anche le novità della 0.0.24, non pubblicata a parte.
+- Impostazioni > Licenze open source: elenco di tutte le librerie incluse, aggiornato a ogni build (file LICENZE.md).
+- Build: la compilazione precedente si ferma quando arriva una nuova modifica sulla stessa branch.
+- Agente: il riepilogo del rotativo non si blocca più se il PDF non riporta date leggibili.
+- Cedolini: nessun crash se il profilo non è impostato nelle Impostazioni.
+
+## 0.0.24
+- Recupero festività: avviso configurabile (attivo/disattivo, giorni prima della scadenza 1–30, predefinito 7).
+- Copia di sicurezza in una cartella scelta; ripristino dopo aggiornamento con conferma.
+- Primo avvio in tre passi: CID, nome e cognome, impianto e qualifica; l'app si adatta alla qualifica.
+- Cerca CID: importa l'elenco dal telefono e conferma i tuoi dati.
+- Cronologia: ricerca per data gg/mm; report PDF personalizzato per qualifica.
+- Orari: ore inserite in formato HHmm; etichette accessibili sui pulsanti del mese.
+- Corretti: duplicazione riga, dialogo di annullamento cancellazione, controlli al salvataggio.
+
+Versione 0.0.24 (versionCode 24, mai pubblicata a parte: inclusa nella 0.0.25).
+
 ## 0.0.23
 - Primo avvio: la pagina di benvenuto non tronca più la prima riga sotto la barra di stato.
 - Schermata principale: menu laterale (☰) con tutte le voci della scheda Strumenti.

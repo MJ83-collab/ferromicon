@@ -16,6 +16,8 @@ object Archivio {
 
     private const val NOME_FILE = "servizi.json"
     private const val VERSIONE_FORMATO = 6
+    private const val STATO = "stato_archivio"
+    private const val KEY_DANNEGGIATO = "danneggiato"
 
     // ---------- lettura e scrittura ----------
 
@@ -25,10 +27,19 @@ object Archivio {
         return try {
             daTesto(file.readText())
         } catch (e: Exception) {
-            // File danneggiato: lo conserviamo a parte invece di perderlo.
+            // File danneggiato: lo mettiamo da parte e lo segnaliamo, invece di perderlo in silenzio.
             file.renameTo(File(ctx.filesDir, "$NOME_FILE.danneggiato"))
+            ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).edit().putBoolean(KEY_DANNEGGIATO, true).apply()
             Dati(emptyList(), emptyList())
         }
+    }
+
+    /** True se l'archivio è stato messo da parte perché illeggibile e l'utente non è ancora stato avvisato. */
+    fun danneggiatoDaSegnalato(ctx: Context): Boolean =
+        ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).getBoolean(KEY_DANNEGGIATO, false)
+
+    fun segnalazioneDanneggiatoVista(ctx: Context) {
+        ctx.getSharedPreferences(STATO, Context.MODE_PRIVATE).edit().putBoolean(KEY_DANNEGGIATO, false).apply()
     }
 
     fun carica(ctx: Context): List<Servizio> = caricaTutto(ctx).servizi
@@ -273,6 +284,8 @@ object Archivio {
                 put("tipo", r.tipo.name)
                 put("partenzaReale", r.partenzaReale?.toString() ?: "")
                 put("arrivoReale", r.arrivoReale?.toString() ?: "")
+                put("collegamento", r.collegamento)
+                put("vettura", r.vettura)
             })
         }
     }
@@ -284,7 +297,9 @@ object Archivio {
             arrivo = LocalDateTime.parse(it.getString("arrivo")),
             tipo = runCatching { TipoRiga.valueOf(it.getString("tipo")) }.getOrDefault(TipoRiga.ALTRO),
             partenzaReale = data(it, "partenzaReale"),
-            arrivoReale = data(it, "arrivoReale")
+            arrivoReale = data(it, "arrivoReale"),
+            collegamento = it.optString("collegamento", ""),
+            vettura = it.optBoolean("vettura", false)
         )
     }
 
@@ -406,7 +421,13 @@ object Archivio {
         put("permessiAggiuntivi", i.permessiAggiuntivi)
         put("parentaliSpettanti", i.parentaliSpettanti)
         put("permessiSpettanti", i.permessiSpettanti)
+        put("abilitazioniLinee", JSONArray(i.abilitazioniLinee))
+        put("abilitazioniMacchine", JSONArray(i.abilitazioniMacchine))
+        put("ultimoViaggio", JSONObject().apply { i.ultimoViaggio.forEach { (k, v) -> put(k, v.toString()) } })
+        put("giorniSogliaAbilitazioni", i.giorniSogliaAbilitazioni)
         put("promemoriaMinuti", i.promemoriaMinuti)
+        put("avvisoRecuperoAttivo", i.avvisoRecuperoAttivo)
+        put("giorniAvvisoRecupero", i.giorniAvvisoRecupero)
         put("letteraGruppoFerie", i.letteraGruppoFerie?.toString() ?: "")
         i.limitiOrario?.let { put("limitiOrario", JSONObject().apply {
             put("diurno", it.diurnoMinuti); put("notturno", it.notturnoMinuti)
@@ -416,6 +437,7 @@ object Archivio {
         put("addComunalePct", i.addComunalePct)
         put("profilo", i.profilo?.name ?: "")
         put("cid", i.cid)
+        put("impianto", i.impianto)
         put("nome", i.nome)
         put("festiviForzati", JSONArray().apply {
             i.festiviForzati.forEach { (data, valore) ->
@@ -433,7 +455,15 @@ object Archivio {
         permessiAggiuntivi = o.optInt("permessiAggiuntivi", 0),
         parentaliSpettanti = o.optInt("parentaliSpettanti", 0),
         permessiSpettanti = o.optInt("permessiSpettanti", 0),
+        abilitazioniLinee = o.optJSONArray("abilitazioniLinee")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
+        abilitazioniMacchine = o.optJSONArray("abilitazioniMacchine")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
+        ultimoViaggio = o.optJSONObject("ultimoViaggio")?.let { j ->
+            j.keys().asSequence().associateWith { LocalDate.parse(j.getString(it)) }
+        } ?: emptyMap(),
+        giorniSogliaAbilitazioni = o.optInt("giorniSogliaAbilitazioni", 90),
         promemoriaMinuti = o.optInt("promemoriaMinuti", 60),
+        avvisoRecuperoAttivo = o.optBoolean("avvisoRecuperoAttivo", true),
+        giorniAvvisoRecupero = o.optInt("giorniAvvisoRecupero", 7).coerceIn(1, 30),
         letteraGruppoFerie = o.optString("letteraGruppoFerie", "").firstOrNull()?.uppercaseChar(),
         limitiOrario = o.optJSONObject("limitiOrario")?.let {
             LimitiOrario(it.optInt("diurno", 510), it.optInt("notturno", 420))
@@ -443,6 +473,7 @@ object Archivio {
         addComunalePct = o.optDouble("addComunalePct", 0.8),
         profilo = runCatching { Profilo.valueOf(o.getString("profilo")) }.getOrNull(),
         cid = o.optString("cid", ""),
+        impianto = o.optString("impianto", ""),
         nome = o.optString("nome", ""),
         festiviForzati = o.optJSONArray("festiviForzati")?.let { a ->
             (0 until a.length()).associate {

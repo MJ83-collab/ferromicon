@@ -24,6 +24,7 @@ class EsportaActivity : Activity() {
         const val PDF_ANNO = 52
         const val ZIP_ESPORTA = 53
         const val ZIP_IMPORTA = 54
+        const val RIEPILOGO_CSV = 55
     }
 
     private lateinit var corpo: LinearLayout
@@ -63,6 +64,12 @@ class EsportaActivity : Activity() {
         testo("Dati in CSV", 16f, grassetto = true)
         testo("Un file zip con un CSV per ogni tipo di dato. Ogni riga ha le colonne leggibili e il dettaglio " +
             "completo, così il file si reimporta senza perdere nulla. Si apre anche con Excel.", secondario = true)
+        pulsante("Riepilogo mensile in CSV…") {
+            scegliData { data ->
+                meseScelto = YearMonth.from(data)
+                crea(RIEPILOGO_CSV, "text/csv", "ferromicon-riepilogo-$meseScelto.csv")
+            }
+        }
         pulsante("Esporta tutti i dati (zip con CSV)") {
             crea(ZIP_ESPORTA, "application/zip", ScambioCsv.NOME_ZIP)
         }
@@ -104,12 +111,42 @@ class EsportaActivity : Activity() {
                     ScambioCsv.zip(ScambioCsv.tabelle(Archivio.caricaTutto(this)), it)
                 }
                 ZIP_IMPORTA -> importa(uri)
+                RIEPILOGO_CSV -> contentResolver.openOutputStream(uri)?.use {
+                    it.write(riepilogoCsv(Archivio.caricaTutto(this), meseScelto).toByteArray(Charsets.UTF_8))
+                }
                 else -> return
             }
             if (requestCode != ZIP_IMPORTA) Toast.makeText(this, "File salvato", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Toast.makeText(this, "Operazione non riuscita: ${e.javaClass.simpleName}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    /** Riepilogo del mese come CSV a due colonne (voce; valore), leggibile anche in Excel. */
+    private fun riepilogoCsv(dati: Dati, mese: YearMonth): String {
+        val r = Riepilogo.mese(dati, mese)
+        val assenze = Analisi.riepilogoMese(dati.servizi, mese, dati.assenze).assenzeMese
+        val righe = mutableListOf(
+            "Voce;Valore",
+            "Mese;$mese",
+            "Monte ore;${Riepilogo.ore(r.monteOreMinuti)}",
+            "Lavoro;${Riepilogo.ore(r.lavoroMinuti)}",
+            "Ore riconosciute;${Riepilogo.ore(r.oreRiconosciuteMinuti)}",
+            "Presenze effettive;${r.presenzeEffettive}",
+            "Servizi notturni;${r.serviziNotturni}",
+            "Ore fascia 22-6;${Riepilogo.ore(r.minutiFascia22_6)}",
+            "Condotta o scorta;${Riepilogo.ore(r.condottaMinuti)}",
+            "Condotta fino a 3 h;${Riepilogo.ore(r.condottaFinoA3hMinuti)}",
+            "Condotta oltre 3 h;${Riepilogo.ore(r.condottaOltre3hMinuti)}",
+            "Straordinario normale;${Riepilogo.ore(r.straordinarioNormaleMinuti)}",
+            "Straordinario in RC;${Riepilogo.ore(r.straordinarioInRcMinuti)}",
+            "Straordinario in RS;${Riepilogo.ore(r.straordinarioInRsMinuti)}",
+            "Ferie nel mese;${r.ferieMese}",
+            "Ferie residue;${r.ferieResidue}",
+            "Festività soppresse godute;${r.festivitaSoppresseGodute}/${r.festivitaSoppresseSpettanti}"
+        )
+        assenze.forEach { (tipo, n) -> righe += "Giornate ${tipo.etichetta.lowercase()};$n" }
+        return righe.joinToString("\n")
     }
 
     private fun importa(uri: Uri) {

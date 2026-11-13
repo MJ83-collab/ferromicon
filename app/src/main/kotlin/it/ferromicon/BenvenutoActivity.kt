@@ -10,9 +10,11 @@ import android.text.InputType
 import android.view.Gravity
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 
@@ -50,25 +52,90 @@ class BenvenutoActivity : Activity() {
             colonna.addView(testo("Ferromicon ti aiuta a tenere in ordine turni, servizi, assenze e cedolini."))
             colonna.addView(intestazione("Cosa puoi fare"))
             FUNZIONI.forEach { colonna.addView(voce(it)) }
-            colonna.addView(intestazione("Il tuo nome"))
-            colonna.addView(testo("Compare nell'agenda e nei calendari che esporti. Resta solo su questo telefono."))
+            val g1 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            val g2 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            val g3 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            colonna.addView(g1); colonna.addView(g2); colonna.addView(g3)
+            fun vaiA(n: Int) {
+                listOf(g1, g2, g3).forEachIndexed { i, g ->
+                    g.visibility = if (i == n) android.view.View.VISIBLE else android.view.View.GONE
+                }
+            }
+            g1.addView(intestazione("Il tuo profilo"))
+            g1.addView(testo("Serve a personalizzare l'app. Resta solo su questo telefono."))
+            val attuale = Archivio.caricaTutto(this@BenvenutoActivity).impostazioni
+            g1.addView(testo("Nome e cognome"))
             val campo = EditText(this).apply {
                 hint = "Nome e cognome"
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
                 maxLines = 1
-                setText(Archivio.caricaTutto(this@BenvenutoActivity).impostazioni.nome)
+                setText(attuale.nome)
             }
-            colonna.addView(campo)
-            colonna.addView(Button(this).apply {
+            g1.addView(campo)
+            g1.addView(testo("CID"))
+            val cidCampo = EditText(this).apply {
+                hint = "CID"
+                inputType = InputType.TYPE_CLASS_TEXT
+                maxLines = 1
+                setText(attuale.cid)
+            }
+            g1.addView(cidCampo)
+            g1.addView(Button(this).apply {
+                text = "Avanti"
+                setOnClickListener {
+                    if (campo.text.toString().isBlank()) Toast.makeText(this@BenvenutoActivity, "Inserisci nome e cognome", Toast.LENGTH_SHORT).show()
+                    else vaiA(1)
+                }
+            })
+            g2.addView(testo("Impianto di appartenenza"))
+            val impianto = Spinner(this).apply {
+                adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
+                    listOf("Scegli l'impianto") + Impianti.tutti)
+                setSelection(Impianti.tutti.indexOf(attuale.impianto).let { if (it < 0) 0 else it + 1 })
+            }
+            g2.addView(impianto)
+            g2.addView(testo("Qualifica"))
+            val qualifica = Spinner(this).apply {
+                adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
+                    listOf("Scegli la qualifica") + Profilo.values().map { it.etichetta })
+                setSelection(attuale.profilo?.let { Profilo.values().indexOf(it) + 1 } ?: 0)
+            }
+            g2.addView(qualifica)
+            g2.addView(Button(this).apply { text = "Indietro"; setOnClickListener { vaiA(0) } })
+            g2.addView(Button(this).apply {
+                text = "Avanti"
+                setOnClickListener {
+                    if (impianto.selectedItemPosition == 0 || qualifica.selectedItemPosition == 0)
+                        Toast.makeText(this@BenvenutoActivity, "Scegli impianto e qualifica", Toast.LENGTH_SHORT).show()
+                    else vaiA(2)
+                }
+            })
+            g3.addView(testo("Livello / posizione retributiva (facoltativo, lo trovi in busta paga)"))
+            val livello = Spinner(this).apply {
+                adapter = ArrayAdapter(this@BenvenutoActivity, android.R.layout.simple_spinner_dropdown_item,
+                    listOf("Non impostato") + Livello.values().map { it.name })
+                setSelection((attuale.livello?.ordinal ?: -1) + 1)
+            }
+            g3.addView(livello)
+            g3.addView(Button(this).apply { text = "Indietro"; setOnClickListener { vaiA(1) } })
+            g3.addView(Button(this).apply {
                 text = "Inizia"
                 setOnClickListener {
                     val nome = campo.text.toString().trim().take(60)
-                    salvaNome(nome)
+                    if (nome.isEmpty() || impianto.selectedItemPosition == 0 || qualifica.selectedItemPosition == 0) {
+                        Toast.makeText(this@BenvenutoActivity, "Inserisci nome, impianto e qualifica", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    salvaProfilo(nome, cidCampo.text.toString().trim().take(20),
+                        Impianti.tutti[impianto.selectedItemPosition - 1],
+                        Profilo.values()[qualifica.selectedItemPosition - 1],
+                        if (livello.selectedItemPosition == 0) null else Livello.values()[livello.selectedItemPosition - 1])
                     segnaVisto(this@BenvenutoActivity)
                     startActivity(Intent(this@BenvenutoActivity, MainActivity::class.java))
                     finish()
                 }
             })
+            vaiA(0)
         }
 
         colonna.addView(intestazione("Informazioni e responsabilità"))
@@ -80,12 +147,13 @@ class BenvenutoActivity : Activity() {
         })
     }
 
-    private fun salvaNome(nome: String) {
+    private fun salvaProfilo(nome: String, cid: String, impianto: String, profilo: Profilo, livello: Livello?) {
         runCatching {
             val imp = Archivio.caricaTutto(this).impostazioni
-            Archivio.salvaImpostazioni(this, imp.copy(nome = nome))
+            Archivio.salvaImpostazioni(this, imp.copy(nome = nome, cid = cid, impianto = impianto,
+                profilo = profilo, livello = livello))
         }.onFailure {
-            Toast.makeText(this, "Il nome non è stato salvato. Riprova dalle Impostazioni.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Il profilo non è stato salvato. Riprova dalle Impostazioni.", Toast.LENGTH_LONG).show()
         }
     }
 

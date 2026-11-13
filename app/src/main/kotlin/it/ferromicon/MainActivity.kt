@@ -69,6 +69,8 @@ class MainActivity : Activity() {
             return
         }
         if (savedInstanceState == null) Aggiornamenti.controllaAllAvvio(this)
+        if (savedInstanceState == null) CopiaSicurezza.alAvvio(this)
+        if (savedInstanceState == null) CopiaSicurezza.avvisaDanneggiato(this)
         savedInstanceState?.getString("mese")?.let { mese = YearMonth.parse(it) }
         savedInstanceState?.getString("scheda")?.let { nome ->
             scheda = Scheda.values().firstOrNull { it.name == nome } ?: Scheda.AGENDA
@@ -105,9 +107,9 @@ class MainActivity : Activity() {
             setOnClickListener { mese = YearMonth.now(); aggiorna() }
         }
         intestazioneMese.addView(Button(this).apply { text = "☰"; setOnClickListener { apriMenu(true) } })
-        intestazioneMese.addView(Button(this).apply { text = "‹"; setOnClickListener { mese = mese.minusMonths(1); aggiorna() } })
+        intestazioneMese.addView(Button(this).apply { text = "‹"; contentDescription = "Mese precedente"; setOnClickListener { mese = mese.minusMonths(1); aggiorna() } })
         intestazioneMese.addView(titolo, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        intestazioneMese.addView(Button(this).apply { text = "›"; setOnClickListener { mese = mese.plusMonths(1); aggiorna() } })
+        intestazioneMese.addView(Button(this).apply { text = "›"; contentDescription = "Mese successivo"; setOnClickListener { mese = mese.plusMonths(1); aggiorna() } })
         radice.addView(intestazioneMese)
 
         // Azioni principali, sempre a portata di pollice nella scheda Agenda
@@ -197,7 +199,10 @@ class MainActivity : Activity() {
             voce.setTypeface(null, if (scelta) Typeface.BOLD else Typeface.NORMAL)
         }
         title = when (scheda) {
-            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.nome.let { if (it.isBlank()) "Ciao" else "Ciao, $it" }
+            Scheda.AGENDA -> Archivio.caricaTutto(this).impostazioni.let { imp ->
+                val saluto = if (imp.nome.isBlank()) "Ciao" else "Ciao, ${imp.nome}"
+                if (imp.impianto.isBlank()) saluto else "$saluto · ${imp.impianto}"
+            }
             Scheda.RIEPILOGO -> "Riepilogo del mese"
             Scheda.STRUMENTI -> "Strumenti"
         }
@@ -236,6 +241,9 @@ class MainActivity : Activity() {
             Strumento("🧮", "Cartellino SAP", "Importa il PDF: timbrature e flessibilità", 41)
         ),
         "Orari e rubrica" to listOf(
+            Strumento("🎫", "Abilitazioni", "Linee e tipi di treno per cui sei abilitato", 43),
+            Strumento("🔎", "Cerca treno", "Cronologia per numero: mesi e turni", 44),
+            Strumento("🪪", "Cerca CID", "Nome e impianto da un elenco importato", 45),
             Strumento("🚆", "Orario Azienda", "Treni e fermate", 13),
             Strumento("📒", "Rubrica stazioni", "Numeri utili", 12),
             Strumento("🗓️", "Esporta calendario", "File .ics: scegli cosa, anche su Drive", 9),
@@ -314,7 +322,12 @@ class MainActivity : Activity() {
         sfondoMenu.visibility = if (aperto) View.VISIBLE else View.GONE
     }
 
-    private fun gruppo(nome: String, voci: List<Strumento>) {
+    /** Voci legate a turni e riposi: il personale di ufficio non le usa. */
+    private val vociSoloTurno = setOf(7, 8, 19, 21)
+
+    private fun gruppo(nome: String, vociTutte: List<Strumento>) {
+        val ufficio = Archivio.caricaTutto(this).impostazioni.profiloAttivo == Profilo.UFFICIO
+        val voci = vociTutte.filterNot { ufficio && it.id in vociSoloTurno }
         intestazione(nome)
         voci.chunked(2).forEach { coppia ->
             val riga = LinearLayout(this)
@@ -353,6 +366,9 @@ class MainActivity : Activity() {
     private fun esegui(id: Int) {
         when (id) {
             40 -> startActivity(Intent(this, WikiActivity::class.java))
+            43 -> startActivity(Intent(this, AbilitazioniActivity::class.java))
+            44 -> startActivity(Intent(this, CronologiaTrenoActivity::class.java))
+            45 -> startActivity(Intent(this, CercaCidActivity::class.java))
             41 -> startActivity(Intent(this, CartellinoSapActivity::class.java))
             42 -> startActivity(Intent(this, EsportaActivity::class.java))
             2 -> startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -426,6 +442,7 @@ class MainActivity : Activity() {
         val uri = data?.data
         if (resultCode != RESULT_OK || uri == null) return
         when (requestCode) {
+            CopiaSicurezza.RICHIESTA_CARTELLA -> CopiaSicurezza.dopoSceltaCartella(this, uri)
             RICHIESTA_BACKUP -> try {
                 contentResolver.openOutputStream(uri)?.use {
                     it.write(Archivio.aTesto(Archivio.caricaTutto(this)).toByteArray())
@@ -970,12 +987,31 @@ class MainActivity : Activity() {
                 setMargins(dp(1), dp(1), dp(1), dp(1))
             })
         }
-        testo("Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
-            "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · CA chiusura aziendale · " +
-            "A altra assenza · " +
-            "S straordinario (sul servizio).", Stile.secondario, 12f)
-        testo("Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
-            "Tocca un giorno per aggiungere o vedere le voci.", Stile.secondario, 12f)
+        val vociLegenda = listOf(
+            "Legenda: M malattia · I infortunio · F ferie · P permesso · PG giorno parentale · " +
+                "R riposo · RS riposo settimanale · RF recupero festivo · D disponibilità · CA chiusura aziendale · " +
+                "A altra assenza · S straordinario (sul servizio).",
+            "Verde servizio · rosso con violazioni · azzurro ferie · grigio riposo · giallo altre assenze · bordo blu oggi. " +
+                "Tocca un giorno per aggiungere o vedere le voci."
+        ).map { t ->
+            TextView(this).apply {
+                text = t
+                textSize = 12f
+                setPadding(0, dp(2), 0, dp(2))
+                setTextColor(Stile.secondario)
+                visibility = android.view.View.GONE
+            }
+        }
+        vociLegenda.forEach { destinazione.addView(it) }
+        destinazione.addView(Button(this).apply {
+            text = "Legenda ▾"
+            contentDescription = "Mostra o nascondi la legenda"
+            setOnClickListener {
+                val aperta = vociLegenda.first().visibility == android.view.View.VISIBLE
+                vociLegenda.forEach { it.visibility = if (aperta) android.view.View.GONE else android.view.View.VISIBLE }
+                text = if (aperta) "Legenda ▾" else "Legenda ▴"
+            }
+        })
     }
 
     // ---------- selezione di date ----------
@@ -1567,7 +1603,7 @@ class MainActivity : Activity() {
         val fmt = DateTimeFormatter.ofPattern("d MMM HH:mm", Locale.ITALIAN)
         AlertDialog.Builder(this)
             .setTitle("Tocca per ripristinare")
-            .setItems(voci.map { "${it.descrizione}  ·  eliminato ${fmt.format(it.eliminatoIl)}" }.toTypedArray()) { _, i ->
+            .setItems(voci.map { "${it.descrizione}  ·  eliminato ${fmt.format(it.eliminatoIl)}  ·  scade il ${fmt.format(it.eliminatoIl.plusDays(30))}" }.toTypedArray()) { _, i ->
                 Archivio.ripristina(this, voci[i]); aggiorna()
                 Toast.makeText(this, "${voci[i].descrizione} ripristinato", Toast.LENGTH_SHORT).show()
             }

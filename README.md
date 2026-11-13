@@ -93,3 +93,6 @@ Il salvataggio JSON (in `app/`) usa `org.json` di Android e non rientra nei test
 - Il CCNL scade il 31/12/2026: i valori del 2027 andranno aggiornati.
 
 Fa sempre fede la busta paga.
+
+## Licenze
+Ogni build elenca tutte le librerie incluse con la loro licenza: il file è `LICENZE.md` e lo stesso elenco si vede nell'app in Impostazioni > Licenze open source. Se una dipendenza ha una licenza non libera o sconosciuta, la build si ferma.
