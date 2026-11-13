@@ -231,6 +231,12 @@ data class Impostazioni(
     val addComunalePct: Double = 0.8,
     /** Profilo scelto all'avvio (macchinista o capotreno); null = non ancora scelto. */
     val profilo: Profilo? = null,
+    /** Figura professionale (nome in [FigureProfessionali]) per il salario professionale; vuoto = dal profilo. */
+    val figuraProfessionale: String = "",
+    /** Data dalla quale sei assegnato in via provvisoria a un'altra mansione; null = nessuna. */
+    val assegnazioneTemporaneaDal: LocalDate? = null,
+    /** Nota libera sull'assegnazione temporanea. */
+    val assegnazioneTemporaneaNota: String = "",
     /** CID (matricola) dell'utente: serve a trovare il suo calendario nei PDF dell'impianto. */
     val cid: String = "",
     /** Impianto di appartenenza, scelto da [Impianti.tutti]; vuoto = non impostato. */
