@@ -95,8 +95,8 @@ val controllaLicenze by tasks.registering {
         val radice = origine.get().asFile.let { JsonSlurper().parse(it) as Map<*, *> }
         val voci = (radice["dependencies"] as? List<*> ?: emptyList<Any>()).mapNotNull { it as? Map<*, *> }
 
-        // Licenze accettate: permissive o copyleft deboli. Tutto il resto ferma la build.
-        val ammesse = Regex("apache|\\bmit\\b|\\bbsd\\b|\\bisc\\b|eclipse|\\bepl\\b|mozilla|\\bmpl\\b|public domain|unlicense|\\bcc0\\b", RegexOption.IGNORE_CASE)
+        // Licenze accettate: permissive o copyleft deboli (Bouncy Castle è una licenza permissiva in stile MIT). Tutto il resto ferma la build.
+        val ammesse = Regex("apache|\\bmit\\b|\\bbsd\\b|\\bisc\\b|eclipse|\\bepl\\b|mozilla|\\bmpl\\b|public domain|unlicense|\\bcc0\\b|bouncy castle", RegexOption.IGNORE_CASE)
 
         fun licenzaDi(v: Map<*, *>): String? {
             (v["moduleLicense"] as? String)?.takeIf { it.isNotBlank() }?.let { return it }
