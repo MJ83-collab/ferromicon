@@ -75,11 +75,16 @@ object Competenze {
         Livello.F1 to 18.58, Livello.F2 to 18.22
     )
 
-    /** Salario professionale mensile (CCNL 2025, art. 72; Altarail art. 53). */
-    fun salarioProfessionale(p: Profilo) = when (p) {
-        Profilo.MACCHINISTA -> 208.96
-        Profilo.CAPOTRENO, Profilo.UFFICIO -> 142.54
-    }
+    /**
+     * Salario professionale mensile (CCNL 2025, art. 72). Se è scelta una figura in tabella, vale il suo
+     * importo; altrimenti si usa il valore del profilo. Per l'Ufficio il valore del profilo (Capo Treno)
+     * è solo un ripiego: serve scegliere la figura.
+     */
+    fun salarioProfessionale(p: Profilo, figura: String = ""): Double =
+        FigureProfessionali.importo(figura) ?: when (p) {
+            Profilo.MACCHINISTA -> 208.96
+            Profilo.CAPOTRENO, Profilo.UFFICIO -> 142.54
+        }
 
     fun minimo(livello: Livello, data: LocalDate): Double {
         val valori = MINIMI.getValue(livello)
@@ -105,7 +110,7 @@ object Competenze {
         val livello = imp.livello
         val base = if (livello == null) 0.0 else
             minimo(livello, data) + numeroScatti(imp.dataAssunzione, data) * SCATTI.getValue(livello)
-        val mensile = base + imp.adPersonam + salarioProfessionale(profilo)
+        val mensile = base + imp.adPersonam + salarioProfessionale(profilo, imp.figuraProfessionale)
         return mensile / 160.0
     }
 

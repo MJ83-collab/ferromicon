@@ -436,6 +436,9 @@ object Archivio {
         put("inpsPct", i.inpsPct)
         put("addComunalePct", i.addComunalePct)
         put("profilo", i.profilo?.name ?: "")
+        put("figuraProfessionale", i.figuraProfessionale)
+        put("assegnazioneTemporaneaDal", i.assegnazioneTemporaneaDal?.toString() ?: "")
+        put("assegnazioneTemporaneaNota", i.assegnazioneTemporaneaNota)
         put("cid", i.cid)
         put("impianto", i.impianto)
         put("nome", i.nome)
@@ -472,6 +475,9 @@ object Archivio {
         inpsPct = o.optDouble("inpsPct", 9.19),
         addComunalePct = o.optDouble("addComunalePct", 0.8),
         profilo = runCatching { Profilo.valueOf(o.getString("profilo")) }.getOrNull(),
+        figuraProfessionale = o.optString("figuraProfessionale", ""),
+        assegnazioneTemporaneaDal = o.optString("assegnazioneTemporaneaDal", "").takeIf { it.isNotBlank() }?.let { LocalDate.parse(it) },
+        assegnazioneTemporaneaNota = o.optString("assegnazioneTemporaneaNota", ""),
         cid = o.optString("cid", ""),
         impianto = o.optString("impianto", ""),
         nome = o.optString("nome", ""),
